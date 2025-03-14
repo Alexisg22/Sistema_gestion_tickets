@@ -65,7 +65,7 @@
     <div class="header-container">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="header-title mb-0">Reporte de Tickets Procesado</h2>
+                <h2 class="header-title mb-0">Vista previa del archivo procesado</h2>
                 <div>
                     <a href="{{ url_for('descargar') }}" class="btn btn-success btn-action">
                         <i class="bi bi-download me-2"></i>Descargar Excel
@@ -118,13 +118,7 @@
                     <tbody>
                         {% for dato in datos %}
                             <tr class="{{ dato.Semaforo }}">
-                                <td>
-                                    <select class="form-select form-select-sm" name="solicitante">
-                                        {% for solicitante in solicitantes %}
-                                            <option value="{{ solicitante }}" {% if solicitante == dato.Solicitante %}selected{% endif %}>{{ solicitante }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </td>
+                                <td>{{ dato.Solicitante }}</td>
                                 <td>{{ dato.WO }}</td>
                                 <td>{{ dato.REQ }}</td>
                                 <td>{{ dato.Estado }}</td>

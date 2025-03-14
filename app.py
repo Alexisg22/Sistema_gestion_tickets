@@ -135,7 +135,7 @@ def process_reporte_wo(df):
         return None, f"Error procesando Reporte WO: {str(e)}"
 
 def process_seguimiento_final(df):
-    """Procesa el archivo de Seguimiento Final"""
+    #Procesa el archivo de Seguimiento Final
     try:
         # Asumiendo que el archivo de seguimiento tiene una estructura diferente
         df_cleaned = df.copy()
@@ -167,10 +167,14 @@ def process_seguimiento_final(df):
         date_columns = ['Fecha de creación', 'Fecha Última Nota']
         for col in date_columns:
             if col in df_cleaned.columns:
-                # Convertir a datetime primero para poder manejar diferentes formatos de fecha
+                # Primero reemplaza valores vacíos con NaN
+                df_cleaned[col] = df_cleaned[col].replace('', pd.NA)
+                # Luego convierte a datetime
                 df_cleaned[col] = pd.to_datetime(df_cleaned[col], errors='coerce')
-                # Luego extraer solo la fecha (sin hora)
+                # Finalmente, extrae la fecha y maneja los NaT
                 df_cleaned[col] = df_cleaned[col].dt.date
+                # Reemplaza NaT con cadena vacía para evitar problemas de renderizado
+                df_cleaned[col] = df_cleaned[col].astype(str).replace('NaT', '')
         
         # Lógica de colores de semáforo
         def semaforo_colores(fecha):
@@ -255,6 +259,7 @@ def upload_file():
 
     return render_template('index.html')
 
+# funcion para descargar el archivo
 @app.route('/descargar', methods=['GET'])
 def descargar():
     global archivo_guardado
@@ -263,6 +268,7 @@ def descargar():
     else:
         return "No hay archivo disponible para descargar."
 
+# funcion para regresar y procesar otros archivos
 @app.route('/regresar', methods=['GET'])
 def regresar():
     return redirect(url_for('upload_file'))
