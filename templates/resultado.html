@@ -3,150 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultado del Procesamiento</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-    <style>
-        body {
-            background-color: #f0f2f5;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding-bottom: 30px;
-        }
-        .header-container {
-            background-color: white;
-            padding: 20px 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        .header-title {
-            color: #3a3f51;
-            font-weight: 600;
-        }
-        .data-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-        .btn-action {
-            margin-right: 10px;
-            padding: 8px 20px;
-            font-weight: 500;
-        }
-        .data-table {
-            width: 100%;
-            margin-top: 20px;
-        }
-        .data-table th {
-            background-color: #f8f9fa;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .table-responsive {
-            max-height: 600px;
-        }
-        .verde {
-            background-color: #d1e7dd !important;
-        }
-        .naranja {
-            background-color: #fff3cd !important;
-        }
-        .rojo {
-            background-color: #f8d7da !important;
-        }
-        .sin-fecha {
-            background-color: #e9ecef !important;
-        }
-    </style>
+    <title>Resultados</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
 </head>
 <body>
-    <div class="header-container">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="header-title mb-0">Vista previa del archivo procesado</h2>
-                <div>
-                    <a href="{{ url_for('descargar') }}" class="btn btn-success btn-action">
-                        <i class="bi bi-download me-2"></i>Descargar Excel
-                    </a>
-                    <a href="{{ url_for('regresar') }}" class="btn btn-outline-secondary btn-action">
-                        <i class="bi bi-arrow-left me-2"></i>Regresar
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="data-container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4>Datos procesados</h4>
-                <div class="d-flex align-items-center">
-                    <div class="me-4">
-                        <span class="badge bg-success me-1">■</span> Actualizado < 30 días
-                        <span class="badge bg-warning text-dark me-1 ms-2">■</span> 30-60 días
-                        <span class="badge bg-danger me-1 ms-2">■</span> > 60 días
-                    </div>
-                    <div>
-                        <span>Total: <strong>{{ datos|length }}</strong> registros</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered data-table">
-                    <thead>
-                        <tr>
-                            <th>Solicitante</th>
-                            <th>WO</th>
-                            <th>REQ</th>
-                            <th>Estado</th>
-                            <th>Fecha de creación</th>
-                            <th>Fecha Última Nota</th>
-                            <th>Descripción</th>
-                            <th>Detalle Última Nota</th>
-                            <th>Aplicación</th>
-                            <th>Tipo</th>
-                            <th>Observaciones UT</th>
-                            <th>Entrega Plan de Trabajo</th>
-                            <th>Pruebas con SIMM</th>
-                            <th>Posible Salida a Producción</th>
-                            <th>Firma SIMM</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dato in datos %}
-                            <tr class="{{ dato.Semaforo }}">
-                                <td>{{ dato.Solicitante }}</td>
-                                <td>{{ dato.WO }}</td>
-                                <td>{{ dato.REQ }}</td>
-                                <td>{{ dato.Estado }}</td>
-                                <td>{{ dato['Fecha de creación'] }}</td>
-                                <td>{{ dato['Fecha Última Nota'] }}</td>
-                                <td>{{ dato.Descripción }}</td>
-                                <td>{{ dato['Detalle Última Nota'] }}</td>
-                                <td>{{ dato.Aplicación }}</td>
-                                <td>{{ dato.Tipo }}</td>
-                                <td>{{ dato['Observaciones UT'] }}</td>
-                                <td contenteditable="true">{{ dato['Entrega Plan de Trabajo'] }}</td>
-                                <td contenteditable="true">{{ dato['Pruebas con SIMM'] }}</td>
-                                <td contenteditable="true">{{ dato['Posible Salida a Producción'] }}</td>
-                                <td contenteditable="true">{{ dato['Firma SIMM'] }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="container-fluid px-4 mt-4">
+        <h2 class="text-center text-success mb-4">Resultados</h2>
         
-        <div class="text-center">
-            <a href="{{ url_for('descargar') }}" class="btn btn-primary btn-lg">
-                <i class="bi bi-download me-2"></i>Descargar Excel Procesado
-            </a>
+        <div class="d-flex justify-content-start mb-3">
+            <button id="download" class="btn btn-primary me-2">Descargar Archivo</button>
+            <button id="addRow" class="btn btn-success">Agregar Fila</button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table data" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Solicitante</th>
+                        <th>WO</th>
+                        <th>REQ</th>
+                        <th>Fecha Creación</th>
+                        <th>Fecha Última Nota</th>
+                        <th>Descripción</th>
+                        <th>Detalle Última Nota</th>
+                        <th>Aplicación</th>
+                        <th>Tipo</th>
+                        <th>Observaciones UT</th>
+                        <th>Origen</th>
+                        <th>Semáforo</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fila in datos %}
+                    <tr>
+                        <td>
+                            <select class="form-select">
+                                <option value="ESI" {% if fila['Solicitante'] == '' %}selected{% endif %}></option>
+                                <option value="ESI" {% if fila['Solicitante'] == 'ESI' %}selected{% endif %}>ESI</option>
+                                <option value="SIMM" {% if fila['Solicitante'] == 'SIMM' %}selected{% endif %}>SIMM</option>
+                                <option value="SMM" {% if fila['Solicitante'] == 'SMM' %}selected{% endif %}>SMM</option>
+                            </select>
+                        </td>
+                        <td><input type="text" class="form-control-md" value="{{ fila['WO'] }}"></td>
+                        <td><input type="text" class="form-control-md" value="{{ fila['REQ'] }}"></td>
+                        <td><input type="date" class="form-control-md" value="{{ fila['Fecha de creación'] }}"></td>
+                        <td><input type="date" class="form-control-md" value="{{ fila['Fecha Ultima Nota'] }}"></td>
+                        <td><input type="text" class="form-control-md" value="{{ fila['Descripción'] }}"></td>
+                        <td><input type="text" class="form-control-md" value="{{ fila['Detalle Ultima Nota'] }}"></td>
+                        <td><input type="text" class="form-control-md" value="{{ fila['Aplicación'] }}"></td>
+                        <td><input type="text" class="form-control-md" id="tipo" value="{{ fila['Tipo'] }}"></td>
+                        <td><input type="text" class="form-control-md" value="{{ fila['Observaciones UT'] }}"></td>
+                        <td><input type="text" class="form-control-md" value="{{ fila['Origen'] }}"></td>
+                        <td data-semaforo="{{ fila['Semáforo'] or 'rojo' }}">
+                            {{ fila['Semáforo'] or 'rojo' }}
+                        </td>
+                        <td><button class="btn btn-danger btn-sm removeRow">Eliminar</button></td>      
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='results.js') }}"></script>
 </body>
 </html>

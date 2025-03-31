@@ -1,94 +1,105 @@
-/* Tabla personalizada */
-table.data {
+/* 🔹 Ajustes base para la tabla */
+.table.data {
     width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    table-layout: auto; /* Permitir que las celdas se ajusten automáticamente */
-    overflow-x: auto; /* Desplazamiento horizontal si es necesario */
-    border: 1px solid #ddd; /* Añadir un borde general a la tabla */
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
-table.data th, table.data td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #ddd; /* Asegurar que las celdas tengan borde */
-    font-size: 14px;
-    white-space: nowrap; /* Evitar que el texto se divida en varias líneas */
+/* 🔹 Contenedor de la tabla */
+.table-responsive {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* Cambios para ver toda la descripción */
-table.data td.descripcion {
-    white-space: normal; /* Permitir que el texto en la columna Detalle descripción se ajuste en varias líneas */
-    word-wrap: break-word; /* Romper palabras largas */
-    width: 300px; /* Hacer la columna de Detalle descripción más ancha */
-}
-
-/* Cambios nuevos para encabezados */
-table.data th {
-    background-color: #198754;  /* Verde de Bootstrap */
+/* 🔹 Encabezados fijos */
+.table.data th {
+    background-color: #198754;
     color: white;
     text-transform: uppercase;
-    border-bottom: 2px solid #444; /* Línea más gruesa para los encabezados */
+    padding: 15px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-table.data td {
-    padding: 10px 8px; /* Reducir padding en celdas */
+/* 🔹 Tamaño de las filas */
+.table.data tr {
+    height: 65px !important; /* Ajusta el tamaño de las filas */
 }
 
-/* Fondo alternado en las filas */
-table.data tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
+/* 🔹 Ajustar las celdas */
+.table.data td {
+    padding: 20px !important;
+    vertical-align: middle;
+    overflow: hidden;
+    min-width: 400px !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
 }
 
-table.data tbody tr:nth-child(odd) {
-    background-color: #ffffff;
+/* 🔹 Inputs y Selects dentro de la tabla */
+.table.data input,
+.table.data select {
+    min-width: 250px !important;
+    height: 50px !important; 
+    padding: 15px !important;
+    font-size: 18px !important;
+    border: 1px solid #ccc !important;
+    border-radius: 5px;
+    text-align: center;
 }
 
-table.data tbody tr:hover {
-    background-color: #f1f1f1; /* Fondo más claro en hover */
+/* 🔹 Evitar que Bootstrap sobreescriba los estilos */
+.form-control {
+    height: auto !important;
+    min-height: 50px !important;
 }
 
-/* Colores del semáforo */
-td[data-semaforo="verde"] {
+/* 🔹 Columnas específicas con ancho personalizado */
+.table.data th:nth-child(1), /* Solicitante */
+.table.data td:nth-child(1) {
+    width: 150px;
+}
+
+.table.data th:nth-child(2), /* WO */
+.table.data td:nth-child(2) {
+    width: 250px;
+}
+
+.table.data th:nth-child(4), /* Fechas */
+.table.data th:nth-child(5),
+.table.data td:nth-child(4),
+.table.data td:nth-child(5) {
+    width: 160px;
+}
+
+.table.data th:nth-child(6), /* Descripción */
+.table.data th:nth-child(7),
+.table.data td:nth-child(6),
+.table.data td:nth-child(7) {
+    width: 250px;
+}
+
+/* 🔹 Semáforo de colores */
+.table.data td[data-semaforo="verde"] {
     background-color: #28a745;
     color: white;
 }
 
-td[data-semaforo="naranja"] {
+.table.data td[data-semaforo="naranja"] {
     background-color: #fd7e14;
     color: white;
 }
 
-td[data-semaforo="rojo"] {
+.table.data td[data-semaforo="rojo"] {
     background-color: #dc3545;
     color: white;
 }
 
-/* Añadir barra de desplazamiento horizontal si es necesario */
-.table-responsive {
-    overflow-x: auto;
+/* 🔹 Hover para filas */
+.table.data tbody tr:hover {
+    background-color: #f1f1f1;
 }
-
-/* Estilo para los botones */
-button {
-    border-radius: 10px;
-    padding: 10px 15px;
-    font-size: 16px;
-}
-
-.table-responsive {
-    overflow-x: scroll;
-    position: relative;
-}
-
-.table-wrapper::before {
-    content: "";
-    display: block;
-    width: 100%;
-    height: 20px;
-    overflow-x: scroll;
-    position: absolute;
-    top: -20px;
-}
-
