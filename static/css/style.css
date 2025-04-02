@@ -1,0 +1,154 @@
+/* 🔹 Ajustes base para la tabla */
+.table.data {
+    width: 200%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* 🔹 Contenedor de la tabla */
+.table-responsive {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 🔹 Encabezados fijos */
+.table.data th {
+    background-color: #198754;
+    color: white;
+    text-transform: uppercase;
+    padding: 10px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: center;
+    position: sticky;
+    
+}
+
+/* 🔹 Tamaño de las filas */
+.table.data tr {
+    height: 65px !important; /* Ajusta el tamaño de las filas */
+    font-size: 0.9rem;
+}
+
+/* 🔹 Ajustar las celdas */
+.table.data td {
+    padding: 8px !important;
+    vertical-align: middle;
+    overflow: hidden;
+    max-width: 220px !important;
+    text-align: center;
+}
+
+/* 🔹 Inputs y Selects dentro de la tabla */
+.table.data input,
+.table.data select {
+    min-width: 150px !important;
+    height: 50px !important;  /* Inputs más grandes */
+    padding: 10px !important;
+    font-size: 0.9rem !important;
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* 🔹 Evitar que Bootstrap sobreescriba los estilos */
+.form-control {
+    height: auto !important;
+    min-height: 50px !important;
+}
+
+/* 🔹 Semáforo de colores */
+.table.data td[data-semaforo="verde"] {
+    background-color: #28a746;
+    color: white;
+}
+
+.table.data td[data-semaforo="naranja"] {
+    background-color: #fd7d14;
+    color: white;
+}
+
+.table.data td[data-semaforo="rojo"] {
+    background-color: #dc3546;
+    color: white;
+}
+
+/* 🔹 Hover para filas */
+.table.data tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* 🔹 Subrayado de las filas al hacer hover */
+.table.data tbody tr:hover {
+    background-color: #8d8d8d;
+    border-bottom: 4px solid #198754; /* Subraya la fila con un borde verde */
+    cursor: pointer; /* Cambia el cursor para indicar interactividad */
+}
+
+
+#modal-description, 
+#detail-modal,
+#observations-modal{
+    display: flex;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+#modal-description__content,
+#modal-detail__content,
+#modal-observations__content {
+    display: flex; 
+    position: fixed; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); 
+    width: 50%; 
+    max-width: 500px; 
+    height: 50%;
+    max-height: 350px;
+    background: white; 
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3); 
+    border-radius: 10px; 
+    padding: 20px;
+    z-index: 1000; 
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+
+    & label {
+        font-size: 1.5rem;
+    }
+
+    & textarea {
+        border: none;
+        text-decoration: none;
+        width: 90%;
+        min-height: 60%;
+        resize: vertical;
+    }
+
+    #action-buttons{
+        display: flex;
+        width: 100%;
+        justify-content: space-around;
+
+        & button {
+            width: 30%;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    }
+}
+
+

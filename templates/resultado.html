@@ -6,7 +6,7 @@
     <title>Resultados</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='./css/style.css') }}">
 </head>
 <body>
     <div class="container-fluid px-4 mt-4">
@@ -15,7 +15,27 @@
         <div class="d-flex justify-content-start mb-3">
             <button id="download" class="btn btn-primary me-2">Descargar Archivo</button>
             <button id="addRow" class="btn btn-success">Agregar Fila</button>
+            
+            <div class="ms-2 d-flex justify-content-lg-between align-items-center">
+                <label class="m-2">Plantilla</label>
+                <select id="select-layout" class="p-1 form-select">
+                    <option value="General">General</option>
+                    <option value="Seguimiento">Seguimiento solicitudes</option>
+                    <option value="Cronogramas">Cronogramas</option>
+                    <option value="Requisitos">Requisitos y aprovaciones</option>
+                </select>
+                
+                <label class='m-2'>Semáforo</label>
+                <select id="filtro-semaforo" class="p-1 form-select">
+                    <option value="todos">Todos los semáforos</option>
+                    <option value="verde">Verde</option>
+                    <option value="naranja">Naranja</option>
+                    <option value="rojo">Rojo</option>
+                </select>
+            </div>
         </div>
+        
+
 
         <div class="table-responsive">
             <table class="table data" id="dataTable">
@@ -31,6 +51,11 @@
                         <th>Aplicación</th>
                         <th>Tipo</th>
                         <th>Observaciones UT</th>
+                        <th>Entrega Alcance</th>
+                        <th>Fecha pruebas con SMM</th>
+                        <th>Fecha puesta en producción</th>
+                        <th>Observaciones</th>
+                        <th>Firmado</th>
                         <th>Origen</th>
                         <th>Semáforo</th>
                         <th>Acción</th>
@@ -38,25 +63,45 @@
                 </thead>
                 <tbody>
                     {% for fila in datos %}
-                    <tr>
+                    <tr id="table-row">
                         <td>
                             <select class="form-select">
-                                <option value="ESI" {% if fila['Solicitante'] == '' %}selected{% endif %}></option>
+                                <option value="" {% if fila['Solicitante'] == '' %}selected{% endif %}></option>
                                 <option value="ESI" {% if fila['Solicitante'] == 'ESI' %}selected{% endif %}>ESI</option>
                                 <option value="SIMM" {% if fila['Solicitante'] == 'SIMM' %}selected{% endif %}>SIMM</option>
                                 <option value="SMM" {% if fila['Solicitante'] == 'SMM' %}selected{% endif %}>SMM</option>
                             </select>
                         </td>
-                        <td><input type="text" class="form-control-md" value="{{ fila['WO'] }}"></td>
-                        <td><input type="text" class="form-control-md" value="{{ fila['REQ'] }}"></td>
-                        <td><input type="date" class="form-control-md" value="{{ fila['Fecha de creación'] }}"></td>
-                        <td><input type="date" class="form-control-md" value="{{ fila['Fecha Ultima Nota'] }}"></td>
-                        <td><input type="text" class="form-control-md" value="{{ fila['Descripción'] }}"></td>
-                        <td><input type="text" class="form-control-md" value="{{ fila['Detalle Ultima Nota'] }}"></td>
-                        <td><input type="text" class="form-control-md" value="{{ fila['Aplicación'] }}"></td>
-                        <td><input type="text" class="form-control-md" id="tipo" value="{{ fila['Tipo'] }}"></td>
-                        <td><input type="text" class="form-control-md" value="{{ fila['Observaciones UT'] }}"></td>
-                        <td><input type="text" class="form-control-md" value="{{ fila['Origen'] }}"></td>
+                        <td><input type="text" class="form-control" value="{{ fila['WO'] }}" readonly></td>
+                        <td><input type="text" class="form-control" value="{{ fila['REQ'] }}" readonly></td>
+                        <td><input type="date" class="form-control" value="{{ fila['Fecha de creación'] }}"></td>
+                        <td><input type="date" class="form-control" value="{{ fila['Fecha Ultima Nota'] }}"></td>
+                        <td><input type="text" class="form-control description" value="{{ fila['Descripción'] }}"></td>
+                        <td><input type="text" class="form-control detail" value="{{ fila['Detalle Ultima Nota'] }}"></td>
+                        <td><input type="text" class="form-control" value="{{ fila['Aplicación'] }}"></td>
+                        <td><input type="text" class="form-control" id="tipo" value="{{ fila['Tipo'] }}"></td>
+                        <td><input type="text" class="form-control observations" value="{{ fila['Observaciones UT'] }}"></td>
+                        <td><input type="date" class="form-control" value="{{fila['Entrega Alcance']}}"></td>
+                        <td><input type="date" class="form-control" value="{{fila['Fecha pruebas con SMM']}}"></td>
+                        <td><input type="date" class="form-control" value="{{fila['Fecha puesta en producción']}}"></td>
+                        <td>
+                            <select class="form-select">
+                                <option value="" {% if fila['Observaciones'] == '' %}selected{% endif %}></option>
+                                <option value="si" {% if fila['Observaciones'] == 'si' %}selected{% endif %}>si</option>
+                                <option value="no" {% if fila['Observaciones'] == 'no' %}selected{% endif %}>no</option>
+                                <option value="no aplica" {% if fila['Observaciones'] == 'no aplica' %}selected{% endif %}>no aplica</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select">
+                                <option value="" {% if fila['Firmado'] == '' %}selected{% endif %}></option>
+                                <option value="si" {% if fila['Firmado'] == 'si' %}selected{% endif %}>si</option>
+                                <option value="no" {% if fila['Firmado'] == 'no' %}selected{% endif %}>no</option>
+                                <option value="no aplica" {% if fila['Firmado'] == 'no aplica' %}selected{% endif %}>no aplica</option>
+                            </select>
+                        </td>
+
+                        <td><input type="text" class="form-control" value="{{ fila['Origen'] }}" readonly></td>
                         <td data-semaforo="{{ fila['Semáforo'] or 'rojo' }}">
                             {{ fila['Semáforo'] or 'rojo' }}
                         </td>
@@ -66,8 +111,9 @@
                 </tbody>
             </table>
         </div>
+        
     </div>
 
-    <script src="{{ url_for('static', filename='results.js') }}"></script>
+    <script src="{{ url_for('static', filename='./js/results.js') }}"></script>
 </body>
 </html>

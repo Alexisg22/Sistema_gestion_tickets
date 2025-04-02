@@ -22,6 +22,14 @@ def process_df_final(df):
     for index, row in df.iterrows():
         wo = row['WO']
         detalle = str(row['Detalle Ultima Nota'])  #Se convierte a String para evitar errores
+        estado = str(row['Estado']).strip().lower() #se convierte a minusculas para evitar errores
+
+        # si el estado es cerrado se pone como detalle de ultima nota
+        if estado == 'cerrado':
+            # Si el estado es cerrado, agregamos la fecha de creación al detalle
+            detalle = estado + " | " + detalle 
+        else: 
+            detalle = detalle
 
         # Si el WO ya existe, concatenamos las notas separadas por " | "
         if wo in reply_tickets:
@@ -33,6 +41,8 @@ def process_df_final(df):
     df['Detalle Ultima Nota'] = df['WO'].map(reply_tickets)
 
     return df
+
+
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -52,7 +62,7 @@ def upload_file():
             df_simm = pd.read_excel(filepath1, skiprows=4)
 
             df_simm.columns = df_simm.columns.str.strip()
-            df_simm = df_simm[['N° Orden de trabajo', 'REQ', 'Fecha de creación', 'Fecha Ultima Nota', 'Detalle descripción', 'Categorización N2', 'Detalle Ult Nota Publica', 'Categorización N1']]
+            df_simm = df_simm[['N° Orden de trabajo', 'REQ', 'Fecha de creación', 'Fecha Ultima Nota', 'Detalle descripción', 'Categorización N2', 'Detalle Ult Nota Publica', 'Categorización N1', 'Estado']]
             
             #filtarr solo donde Categorización N1 sea Aplicación
             df_simm = df_simm[df_simm['Categorización N1'] == 'Aplicación']
@@ -72,6 +82,7 @@ def upload_file():
             df_simm['Tipo'] = ''
             df_simm['Observaciones UT'] = ''
             df_simm['Origen'] = 'SIMM - Reporte WO'
+
 
             df_seguimiento['Origen'] = 'Seguimiento_final'
 
@@ -113,6 +124,14 @@ def upload_file():
             df_final['Fecha de creación'] = df_final['Fecha de creación'].dt.strftime('%Y-%m-%d').fillna("")
             df_final['Fecha Ultima Nota'] = df_final['Fecha Ultima Nota'].dt.strftime('%Y-%m-%d').fillna("")
 
+            df_final['Entrega Alcance'] = ''
+            df_final['Observaciones'] = ''
+            df_final['Firmado'] = ''
+            df_final['Fecha pruebas con SMM'] = ''
+            df_final['Fecha puesta en producción'] = ''
+
+
+            
             archivo_guardado = os.path.join(app.config['UPLOAD_FOLDER'], 'resultado_procesado.xlsx')
             df_final.to_excel(archivo_guardado, index=False)
 
@@ -127,21 +146,20 @@ def upload_file():
 def upload_data():
     global archivo_guardado
     data = request.json.get("datos", [])
+    headers = request.json.get("headers", [])
 
-    if not data:
-        return jsonify({"error": "No se recibieron datos"}), 400
+    if not data or not headers:
+        return jsonify({"error": "No se recibieron datos o encabezados"}), 400
 
-    columnas = ["Solicitante", "WO", "REQ", "Fecha de creación", "Fecha Ultima Nota",
-                "Descripción", "Detalle Ultima Nota", "Aplicación", "Tipo", "Observaciones UT", "Origen", "Semáforo"]
+    # Crear DataFrame con los encabezados correctos directamente
+    df_actualizado = pd.DataFrame(data)
     
-    df_actualizado = pd.DataFrame(data, columns=[f"col{i}" for i in range(len(columnas))])
-    df_actualizado.columns = columnas  # Renombrar las columnas
-
     # Guardar el archivo actualizado
     archivo_guardado = os.path.join(app.config['UPLOAD_FOLDER'], 'resultado_procesado.xlsx')
     df_actualizado.to_excel(archivo_guardado, index=False)
 
     return jsonify({"message": "Datos actualizados correctamente"}), 200
+
 
 
 @app.route('/descargar', methods=['GET'])
