@@ -22,7 +22,7 @@
                     <option value="General">General</option>
                     <option value="Seguimiento">Seguimiento solicitudes</option>
                     <option value="Cronogramas">Cronogramas</option>
-                    <option value="Requisitos">Requisitos y aprovaciones</option>
+                    <option value="Requisitos">Requisitos y aprobaciones</option>
                 </select>
                 
                 <label class='m-2'>Semáforo</label>
@@ -44,10 +44,10 @@
                         <th>Solicitante</th>
                         <th>WO</th>
                         <th>REQ</th>
-                        <th>Fecha Creación</th>
-                        <th>Fecha Última Nota</th>
+                        <th>Fecha de creación</th>
+                        <th>Fecha Ultima Nota</th>
                         <th>Descripción</th>
-                        <th>Detalle Última Nota</th>
+                        <th>Detalle Ultima Nota</th>
                         <th>Aplicación</th>
                         <th>Tipo</th>
                         <th>Observaciones UT</th>
@@ -95,8 +95,9 @@
                         <td>
                             <select class="form-select">
                                 <option value="" {% if fila['Firmado'] == '' %}selected{% endif %}></option>
-                                <option value="si" {% if fila['Firmado'] == 'si' %}selected{% endif %}>si</option>
-                                <option value="no" {% if fila['Firmado'] == 'no' %}selected{% endif %}>no</option>
+                                <option value="firmado" {% if fila['Firmado'] == 'firmado' %}selected{% endif %}>firmado</option>
+                                <option value="pendiente" {% if fila['Firmado'] == 'pendiente' %}selected{% endif %}>pendiente</option>
+                                <!-- <option value="pendiente" {% if fila['Firmado'] == 'pendiente' %}selected{% endif %}>pendiente</option> -->
                                 <option value="no aplica" {% if fila['Firmado'] == 'no aplica' %}selected{% endif %}>no aplica</option>
                             </select>
                         </td>
