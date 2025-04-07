@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='./css/error.css') }}">
     <title>Error</title>
 </head>
 <body>
-    <h1>ERROR</h1>
-    <h2>Ha ocurrido un error</h2>
-    <p>{{ error }}</p>
-    <a href="/">volver</a>
+    <div class="error-container">
+        <h1>ERROR</h1>
+        <h2>error al procesar los archivos, verifica bien y vuelve a intentarlo</h2>
+        <p>{{ error }}</p>
+        <a href="/">volver</a>
+    </div>
 </body>
 </html>

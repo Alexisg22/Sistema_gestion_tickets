@@ -11,11 +11,13 @@
 │   ├── css/
 │   │   ├── index.css
 │   │   └── style.css
+│   │   └── error.css
 │   └── js/
 │       └── results.js
 ├── templates/
 │   ├── index.html
 │   └── results.html
+│   └── error.html
 ├── app.py
 ├── .gitignore
 ├── CHANGELOG.md
