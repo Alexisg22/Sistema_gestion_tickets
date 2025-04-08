@@ -132,7 +132,10 @@ $(document).ready(function() {
 
     // eliminar filas
     $(document).on("click", ".removeRow", function() {
-        $(this).closest("tr").remove();
+        let del = confirm('estás seguro que deseas eliminar la fila?')
+        if(del){
+            $(this).closest("tr").remove();
+        }
     });
 
     // Funcionalidad para cambiar la estructura de la tabla según la opción seleccionada
@@ -140,6 +143,8 @@ $(document).ready(function() {
         const selectedLayout = $(this).val();
         applyLayout(selectedLayout);
     });
+
+    
 
     // Aplicar el diseño inicial (General por defecto)
     applyLayout($("#select-layout").val());

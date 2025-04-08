@@ -46,6 +46,7 @@ El servidor está construido con Flask y maneja:
 2. **`upload_file()`**: Maneja la carga de archivos, procesa los Excel y genera el DataFrame resultante.
 3. **`upload_data()`**: Actualiza los datos modificados en la interfaz.
 4. **`descargar()`**: Permite la descarga del archivo Excel procesado.
+5. **`apply_excel_format`**: Aplica formato y estilado al archivo descargado.
 
 El servidor se encarga también de:
 - Aplicar filtros de antigüedad (semáforo) a los tickets
