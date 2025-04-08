@@ -87,18 +87,18 @@
                         <td>
                             <select class="form-select">
                                 <option value="" {% if fila['Observaciones'] == '' %}selected{% endif %}></option>
-                                <option value="si" {% if fila['Observaciones'] == 'si' %}selected{% endif %}>si</option>
-                                <option value="no" {% if fila['Observaciones'] == 'no' %}selected{% endif %}>no</option>
-                                <option value="no aplica" {% if fila['Observaciones'] == 'no aplica' %}selected{% endif %}>no aplica</option>
+                                <option value="Si" {% if fila['Observaciones'] == 'Si' %}selected{% endif %}>Si</option>
+                                <option value="No" {% if fila['Observaciones'] == 'No' %}selected{% endif %}>No</option>
+                                <option value="No Aplica" {% if fila['Observaciones'] == 'No Aplica' %}selected{% endif %}>N/A</option>
                             </select>
                         </td>
                         <td>
                             <select class="form-select">
                                 <option value="" {% if fila['Firmado'] == '' %}selected{% endif %}></option>
-                                <option value="firmado" {% if fila['Firmado'] == 'firmado' %}selected{% endif %}>firmado</option>
-                                <option value="pendiente" {% if fila['Firmado'] == 'pendiente' %}selected{% endif %}>pendiente</option>
-                                <!-- <option value="pendiente" {% if fila['Firmado'] == 'pendiente' %}selected{% endif %}>pendiente</option> -->
-                                <option value="no aplica" {% if fila['Firmado'] == 'no aplica' %}selected{% endif %}>no aplica</option>
+                                <option value="Firmado SMM" {% if fila['Firmado'] == 'Firmado SMM' %}selected{% endif %}>Firmado SMM</option>
+                                <option value="Pendiente SMM" {% if fila['Firmado'] == 'Pendiente SMM' %}selected{% endif %}>Pendiente SMM</option>
+                                <option value="Pendiente SITTI" {% if fila['Firmado'] == 'Pendiente SITTI' %}selected{% endif %}>Pendiente SITTI</option>
+                                <option value="No Aplica" {% if fila['Firmado'] == 'No Aplica' %}selected{% endif %}>N/A</option>
                             </select>
                         </td>
 

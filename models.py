@@ -96,6 +96,7 @@ class DataProcessor:
         # Validar solicitante
         def validar_solicitante(valor):
             return valor if valor in ['ESI', 'SIMM', 'SMM'] else ''
+            
         
         df_final['Solicitante'] = df_final['Solicitante'].apply(validar_solicitante)
         
@@ -129,7 +130,7 @@ class DataProcessor:
         df_final['Semáforo'] = df_final['Fecha Ultima Nota'].apply(semaforo_colores)
         
         # Limpiar campos Firmado
-        df_final['Firmado'] = df_final['Firmado'].astype(str).str.strip().str.lower()
+        df_final['Firmado'] = df_final['Firmado'].astype(str).str.strip()
         
         # Filtrar tickets firmados antiguos
         df_final = df_final[~((df_final['Firmado'] == 'firmado') & 
