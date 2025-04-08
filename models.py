@@ -96,7 +96,7 @@ class DataProcessor:
         # Validar solicitante
         def validar_solicitante(valor):
             return valor if valor in ['ESI', 'SIMM', 'SMM'] else ''
-            
+        
         df_final['Solicitante'] = df_final['Solicitante'].apply(validar_solicitante)
         
         # Convertir fechas
@@ -128,7 +128,7 @@ class DataProcessor:
                 
         df_final['Semáforo'] = df_final['Fecha Ultima Nota'].apply(semaforo_colores)
         
-        # Limpiar campo Firmado
+        # Limpiar campos Firmado
         df_final['Firmado'] = df_final['Firmado'].astype(str).str.strip().str.lower()
         
         # Filtrar tickets firmados antiguos

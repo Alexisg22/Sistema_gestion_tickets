@@ -47,6 +47,8 @@ p{
 }
 
 a{
+    font-size: 1.15rem;
+    font-weight: bold;
     text-decoration: none;
     width: 10%;
     height: 10%;
