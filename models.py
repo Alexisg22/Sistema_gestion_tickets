@@ -133,7 +133,7 @@ class DataProcessor:
         df_final['Firmado'] = df_final['Firmado'].astype(str).str.strip()
         
         # Filtrar tickets firmados antiguos
-        df_final = df_final[~((df_final['Firmado'] == 'firmado') & 
+        df_final = df_final[~((df_final['Firmado'] == 'Firmado SMM') & 
                              ((hoy - df_final['Fecha Ultima Nota']).dt.days > 30))]
         
         # Formatear fechas
