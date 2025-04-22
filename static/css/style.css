@@ -1,13 +1,24 @@
 /* 🔹 Ajustes base para la tabla */
+body {
+    height: 100vh;
+}
+
+/* 🔹 Barra de navegacion(filtros, agregar fila, plantillas y subir archivo) */
+#navbar{
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+}
+
 .table.data {
-    width: 200%;
+    width: 250%;
     table-layout: fixed;
     border-collapse: separate; /* Evita problemas con sticky */
     border-spacing: 0;
 }
 /* 🔹 Contenedor de la tabla */
 .table-responsive {
-    max-height: 700px; /* Ajusta según necesidad */
+    max-height: 580px;
     overflow-y: auto;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -162,4 +173,58 @@
     }
 }
 
+#modal-upload-file{
+    display: flex;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
 
+#file-container{
+    display: flex; 
+    position: fixed; 
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); 
+    width: 80%; 
+    max-width: 500px; 
+    height: 60%;
+    max-height: 350px;
+    background: white; 
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3); 
+    border-radius: 10px; 
+    padding: 20px;
+    z-index: 1000; 
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+
+    & h2{
+        margin-right: 1rem;
+        width: 100%;
+        display: flex;
+        justify-content: end;
+    }
+
+    & h2:hover{
+        color: #dc3546;
+        cursor: pointer;
+    }
+
+    & div{
+        display: flex;
+        justify-content: center;
+        margin: 1.5rem;
+
+        & button {
+            width: 40%;
+        }
+    }
+}
