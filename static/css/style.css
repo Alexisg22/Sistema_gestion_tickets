@@ -11,7 +11,7 @@ body {
 }
 
 .table.data {
-    width: 250%;
+    width: 230%;
     table-layout: fixed;
     border-collapse: separate; /* Evita problemas con sticky */
     border-spacing: 0;
@@ -36,6 +36,26 @@ body {
     top: 0;
     z-index: 10;
     text-align: center;
+}
+
+/* 🔹 Columna ID sticky a la izquierda */
+.table.data th:first-child,
+.table.data td:first-child {
+    position: sticky;
+    left: 0;
+    width: 80px;
+    z-index: 11; 
+    background-color: #198754; 
+    color: white;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* 🔹 Celda sticky (contenido) */
+.table.data td:first-child {
+    background-color: rgb(247, 247, 247); 
+    color: black;
+    z-index: 1;
 }
 
 .table.data thead th {

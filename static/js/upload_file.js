@@ -43,7 +43,6 @@ $('#upload_file').on('click', function () {
             console.error(error)
             alert('Error al subir el archivo')
         })
-
     })
 
     // Cerrar modal con la X

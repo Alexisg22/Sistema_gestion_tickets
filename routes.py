@@ -224,25 +224,6 @@ def descargar():
     else:
         return "No hay archivo disponible para descargar.", 404
 
-@app.route('/consultar_tickets', methods=['GET'])
-def consultar_tickets():
-    tickets = Ticket.query.all()
-    resultado = [ticket.to_dict() for ticket in tickets]
-    return render_template('consulta.html', tickets=resultado)
-
-@app.route('/buscar_ticket', methods=['GET'])
-def buscar_ticket():
-    wo = request.args.get('wo', '')
-    
-    if wo:
-        ticket = Ticket.query.filter_by(wo=wo).first()
-        if ticket:
-            return jsonify(ticket.to_dict()), 200
-        else:
-            return jsonify({"error": "Ticket no encontrado"}), 404
-    else:
-        return jsonify({"error": "Debe proporcionar un número de WO"}), 400
-
 @app.route('/actualizar_fila', methods=['POST'])
 def actualizar_fila():
     try:
