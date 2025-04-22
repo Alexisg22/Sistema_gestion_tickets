@@ -12,7 +12,7 @@
     <div class="container-fluid px-4 mt-4">
         <h2 class="text-center text-success mb-4">Resultados</h2>
         
-        <div class="d-flex justify-content-start mb-3">
+        <div class="d-flex mb-3" id="navbar">
             <button id="download" class="btn btn-primary me-2">Descargar Archivo</button>
             <button id="addRow" class="btn btn-success">Agregar Fila</button>
             
@@ -33,14 +33,14 @@
                     <option value="rojo">Rojo</option>
                 </select>
             </div>
+            <button class="btn btn-primary" id="upload_file">Subir Archivo</button>
         </div>
-        
-
 
         <div class="table-responsive">
             <table class="table data" id="dataTable">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Solicitante</th>
                         <th>WO</th>
                         <th>REQ</th>
@@ -49,62 +49,63 @@
                         <th>Descripción</th>
                         <th>Detalle Ultima Nota</th>
                         <th>Aplicación</th>
-                        <th>Tipo</th>
+                        <th>Estado</th>
                         <th>Observaciones UT</th>
                         <th>Entrega Alcance</th>
                         <th>Fecha pruebas con SMM</th>
                         <th>Fecha puesta en producción</th>
                         <th>Observaciones</th>
                         <th>Firmado</th>
-                        <th>Origen</th>
                         <th>Semáforo</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for fila in datos %}
+                    {% for ticket in datos %}
                     <tr id="table-row">
+                        <td><input type="text" class="form-control" value="{{ ticket.id }}" readonly></td>
                         <td>
                             <select class="form-select">
-                                <option value="" {% if fila['Solicitante'] == '' %}selected{% endif %}></option>
-                                <option value="ESI" {% if fila['Solicitante'] == 'ESI' %}selected{% endif %}>ESI</option>
-                                <option value="SIMM" {% if fila['Solicitante'] == 'SIMM' %}selected{% endif %}>SIMM</option>
-                                <option value="SMM" {% if fila['Solicitante'] == 'SMM' %}selected{% endif %}>SMM</option>
+                                <option value="" {% if ticket.solicitante_rel is none or ticket.solicitante_rel.nombre == '' %}selected{% endif %}></option>
+                                <option value="ESI" {% if ticket.solicitante_rel and ticket.solicitante_rel.nombre == 'ESI' %}selected{% endif %}>ESI</option>
+                                <option value="SIMM" {% if ticket.solicitante_rel and ticket.solicitante_rel.nombre == 'SIMM' %}selected{% endif %}>SIMM</option>
+                                <option value="SMM" {% if ticket.solicitante_rel and ticket.solicitante_rel.nombre == 'SMM' %}selected{% endif %}>SMM</option>
                             </select>
                         </td>
-                        <td><input type="text" class="form-control" value="{{ fila['WO'] }}" readonly></td>
-                        <td><input type="text" class="form-control" value="{{ fila['REQ'] }}" readonly></td>
-                        <td><input type="date" class="form-control" value="{{ fila['Fecha de creación'] }}"></td>
-                        <td><input type="date" class="form-control" value="{{ fila['Fecha Ultima Nota'] }}"></td>
-                        <td><input type="text" class="form-control description" value="{{ fila['Descripción'] }}"></td>
-                        <td><input type="text" class="form-control detail" value="{{ fila['Detalle Ultima Nota'] }}"></td>
-                        <td><input type="text" class="form-control" value="{{ fila['Aplicación'] }}"></td>
-                        <td><input type="text" class="form-control" id="tipo" value="{{ fila['Tipo'] }}"></td>
-                        <td><input type="text" class="form-control observations" value="{{ fila['Observaciones UT'] }}"></td>
-                        <td><input type="date" class="form-control" value="{{fila['Entrega Alcance']}}"></td>
-                        <td><input type="date" class="form-control" value="{{fila['Fecha pruebas con SMM']}}"></td>
-                        <td><input type="date" class="form-control" value="{{fila['Fecha puesta en producción']}}"></td>
+                        
+                        <td><input type="text" class="form-control" value="{{ ticket.wo }}" readonly></td>
+                        <td><input type="text" class="form-control" value="{{ ticket.req }}" readonly></td>
+                        <td><input type="date" class="form-control" value="{{ ticket.fecha_creacion.strftime('%Y-%m-%d') }}"></td>
+                        <td><input type="date" class="form-control" value="{{ ticket.fecha_ultima_nota.strftime('%Y-%m-%d') }}"></td>
+                        <td><input type="text" class="form-control description" value="{{ ticket.descripcion }}"></td>
+                        <td><input type="text" class="form-control detail" value="{{ ticket.detalle_ultima_nota }}"></td>
+                        <td><input type="text" class="form-control" value="{{ ticket.aplicacion }}"></td>
+                        <td><input type="text" class="form-control" id="estado" value="{{ ticket.estado_rel }}"></td>
+                        <td><input type="text" class="form-control observations" value="{{ ticket.observaciones_ut }}"></td>
+                        <td><input type="date" class="form-control" value="{{ ticket.entrega_alcance.strftime('%Y-%m-%d') if ticket.entrega_alcance else '' }}"></td>
+                        <td><input type="date" class="form-control" value="{{ ticket.pruebas_simm.strftime('%Y-%m-%d') if ticket.pruebas_simm else '' }}"></td>
+                        <td><input type="date" class="form-control" value="{{ ticket.puesta_produccion.strftime('%Y-%m-%d') if ticket.puesta_produccion else '' }}"></td>
                         <td>
                             <select class="form-select">
-                                <option value="" {% if fila['Observaciones'] == '' %}selected{% endif %}></option>
-                                <option value="Si" {% if fila['Observaciones'] == 'Si' %}selected{% endif %}>Si</option>
-                                <option value="No" {% if fila['Observaciones'] == 'No' %}selected{% endif %}>No</option>
-                                <option value="No Aplica" {% if fila['Observaciones'] == 'No Aplica' %}selected{% endif %}>N/A</option>
+                                <option value="" {% if ticket.observaciones == '' %}selected{% endif %}></option>
+                                <option value="Si" {% if ticket.observaciones == 'Si' %}selected{% endif %}>Si</option>
+                                <option value="No" {% if ticket.observaciones == 'No' %}selected{% endif %}>No</option>
+                                <option value="No Aplica" {% if ticket.observaciones == 'No Aplica' %}selected{% endif %}>N/A</option>
                             </select>
                         </td>
                         <td>
                             <select class="form-select">
-                                <option value="" {% if fila['Firmado'] == '' %}selected{% endif %}></option>
-                                <option value="Firmado SMM" {% if fila['Firmado'] == 'Firmado SMM' %}selected{% endif %}>Firmado SMM</option>
-                                <option value="Pendiente SMM" {% if fila['Firmado'] == 'Pendiente SMM' %}selected{% endif %}>Pendiente SMM</option>
-                                <option value="Pendiente SITTI" {% if fila['Firmado'] == 'Pendiente SITTI' %}selected{% endif %}>Pendiente SITTI</option>
-                                <option value="No Aplica" {% if fila['Firmado'] == 'No Aplica' %}selected{% endif %}>N/A</option>
+                                <option value="" {% if not ticket.firmado or ticket.firmado.rel in ['', None] %}selected{% endif %}></option>
+                                <option value="Firmado SMM" {% if ticket.firmado_rel and ticket.firmado_rel.nombre == 'Firmado SMM' %}selected{% endif %}>Firmado SMM</option>
+                                <option value="Pendiente SMM" {% if ticket.firmado_rel and ticket.firmado_rel.nombre == 'Pendiente SMM' %}selected{% endif %}>Pendiente SMM</option>
+                                <option value="Pendiente SITTI" {% if ticket.firmado_rel and ticket.firmado_rel.nombre == 'Pendiente SITTI' %}selected{% endif %}>Pendiente SITTI</option>
+                                <option value="No Aplica" {% if ticket.firmado_rel and ticket.firmado_rel.nombre == 'No Aplica' %}selected{% endif %}>N/A</option>
                             </select>
                         </td>
+                        
 
-                        <td><input type="text" class="form-control" value="{{ fila['Origen'] }}" readonly></td>
-                        <td data-semaforo="{{ fila['Semáforo'] or 'rojo' }}">
-                            {{ fila['Semáforo'] or 'rojo' }}
+                        <td data-semaforo="{{ ticket.semaforo_rel or 'rojo' }}">
+                            {{ ticket.semaforo_rel or 'rojo' }}
                         </td>
                         <td><button class="btn btn-danger btn-sm removeRow">Eliminar</button></td>      
                     </tr>
@@ -116,5 +117,6 @@
     </div>
 
     <script src="{{ url_for('static', filename='./js/results.js') }}"></script>
+    <script src="{{ url_for('static', filename='./js/upload_file.js') }}"></script>
 </body>
 </html>
