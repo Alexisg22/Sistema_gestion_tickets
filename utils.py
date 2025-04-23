@@ -1,6 +1,7 @@
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 
+#Clase para dar formato al archivo .xlsx descargado 
 class ExcelFormatter:
     @staticmethod
     def apply_format(archivo):

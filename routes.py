@@ -1,30 +1,76 @@
-from flask import Flask, render_template, request, send_file, jsonify
-from datetime import datetime
+from flask import Flask, render_template, request, send_file, jsonify, redirect, url_for
+from datetime import datetime, timedelta
 import os
 import shutil
 import pandas as pd
 from config import Config
 from models import DataProcessor
 from utils import ExcelFormatter
-from db import db, Ticket
+from db import db, Ticket, Semaforo, EstadoFirmado
+from init_db import get_or_create_solicitante, get_or_create_firmado, get_or_create_semaforo, get_or_create_estado
 
 app = Flask(__name__)
 app.config.from_object(Config)
 Config.init_app(app)
+
+processor = DataProcessor()
 
 # Variable global para almacenar la ruta del archivo
 archivo_guardado = None
 
 @app.route('/', methods=['GET', 'POST'])
 def initial():
-    try:
-        tickets = Ticket.query.all()
+    tickets = Ticket.query.order_by(Ticket.fecha_ultima_nota.desc()).all()
 
-        if tickets:
-            return render_template('resultado.html', datos=tickets)
-    except: 
+    if not tickets:
         return render_template('index.html')
-    return render_template('index.html')
+    else:
+        # if request.method == 'GET':
+        #     return render_template('resultado.html', datos=tickets)
+        try:
+            #Eliminar tickets sin fecha y sin wo para evitar errores
+            Ticket.query.filter(
+                Ticket.fecha_creacion == None
+            ).delete(synchronize_session=False)
+
+            Ticket.query.filter(
+                Ticket.fecha_ultima_nota == None
+            ).delete(synchronize_session=False)
+            
+            Ticket.query.filter(
+                Ticket.wo == None
+            ).delete(synchronize_session=False)
+            # Calcular fecha límite (30 días atrás desde hoy)
+            limite_fecha = datetime.now() - timedelta(days=30)
+
+            # Buscar el ID del estado "Firmado SMM"
+            firmado_smm = EstadoFirmado.query.filter_by(nombre='Firmado SMM').first()
+
+            # Eliminar solo si existe el estado "Firmado SMM"
+            if firmado_smm:
+                Ticket.query.filter(
+                    Ticket.firmado_id == firmado_smm.id,
+                    Ticket.fecha_firmado != None,
+                    Ticket.fecha_firmado < limite_fecha
+                ).delete(synchronize_session=False)
+
+            db.session.commit()
+            # Obtener y ordenar tickets por fecha
+
+            # Actualizar semáforo de cada ticket
+            for ticket in tickets:
+                nuevo_color = DataProcessor.semaforo_colores(ticket.fecha_ultima_nota)
+                semaforo = Semaforo.query.filter_by(nombre=nuevo_color).first()
+                if semaforo and ticket.semaforo_id != semaforo.id:
+                    ticket.semaforo_id = semaforo.id
+
+            db.session.commit()
+
+            return render_template('resultado.html', datos=tickets)
+        except Exception as e:
+            print(f"Error: {e}")
+            return render_template('index.html')
+        
 
 @app.route('/upload_file', methods=['GET', 'POST'])
 def upload_file():
@@ -42,11 +88,9 @@ def upload_file():
                 file1.save(filepath1)
                 file2.save(filepath2)
                 
-                # Preparar datos
-                df_final = DataProcessor.prepare_data(filepath1, filepath2)
-                
-                # Procesar datos
-                df_final = DataProcessor.procesar_datos_finales(df_final)
+                # Preparar y procesar datos
+                df_final = processor.prepare_data(filepath1, filepath2)
+                df_final = processor.procesar_datos_finales(df_final)
                 
                 # Guardar resultado
                 archivo_guardado = os.path.join(app.config['UPLOAD_FOLDER'], 'resultado_procesado.xlsx')
@@ -55,28 +99,27 @@ def upload_file():
                 # Guardar en la base de datos
                 for _, row in df_final.iterrows():
                     data_dict = row.to_dict()
-                    # Verificar si el ticket ya existe
                     ticket_existente = Ticket.query.filter_by(wo=data_dict.get('WO')).first()
                     
                     if ticket_existente:
-                        # Actualizar ticket existente
                         for key, value in data_dict.items():
                             try:
                                 setattr(ticket_existente, key.lower().replace(' ', '_'), value)
                             except:
                                 pass
                     else:
-                        # Crear nuevo ticket
                         nuevo_ticket = Ticket.from_dict(data_dict)
                         db.session.add(nuevo_ticket)
                 
                 db.session.commit()
-                
-                tickets = Ticket.query.all()
-                # Renderizar plantilla con resultados
-                return render_template('resultado.html', datos=tickets)
-        
-        return render_template('index.html')
+
+                # REDIRECCIÓN para evitar reenvío del POST
+                return redirect(url_for('upload_file'))
+
+        # GET o después del redirect
+        tickets = Ticket.query.order_by(Ticket.fecha_ultima_nota.desc()).all()
+        return render_template('resultado.html', datos=tickets)
+    
     except Exception as e:
         return render_template('error.html', error=str(e))
 
@@ -97,7 +140,7 @@ def actualizar_datos():
     df_actualizado.to_excel(archivo_guardado, index=False)
     
     # Actualizar la base de datos
-    from init_db import get_or_create_solicitante, get_or_create_firmado, get_or_create_semaforo, get_or_create_estado
+   
     
     for item in data:
         ticket_existente = Ticket.query.filter_by(wo=item.get('WO')).first()
@@ -224,25 +267,6 @@ def descargar():
     else:
         return "No hay archivo disponible para descargar.", 404
 
-@app.route('/consultar_tickets', methods=['GET'])
-def consultar_tickets():
-    tickets = Ticket.query.all()
-    resultado = [ticket.to_dict() for ticket in tickets]
-    return render_template('consulta.html', tickets=resultado)
-
-@app.route('/buscar_ticket', methods=['GET'])
-def buscar_ticket():
-    wo = request.args.get('wo', '')
-    
-    if wo:
-        ticket = Ticket.query.filter_by(wo=wo).first()
-        if ticket:
-            return jsonify(ticket.to_dict()), 200
-        else:
-            return jsonify({"error": "Ticket no encontrado"}), 404
-    else:
-        return jsonify({"error": "Debe proporcionar un número de WO"}), 400
-
 @app.route('/actualizar_fila', methods=['POST'])
 def actualizar_fila():
     try:
@@ -263,6 +287,14 @@ def actualizar_fila():
         firmado = get_or_create_firmado(data.get('Firmado', ''))
         semaforo = get_or_create_semaforo(data.get('Semáforo', ''))
         estado = get_or_create_estado(data.get('Estado', ''))
+
+        # Procesar la fecha de firmado
+        fecha_firmado = None
+        if data.get('Fecha Firmado') and data.get('Fecha Firmado') != '' and not pd.isna(data.get('Fecha Firmado')):
+            try:
+                fecha_firmado = datetime.strptime(str(data.get('Fecha Firmado')), '%Y-%m-%d')
+            except (ValueError, TypeError):
+                fecha_firmado = None
         
         # Convertir fechas de string a objetos datetime
         fecha_creacion = None
@@ -326,6 +358,7 @@ def actualizar_fila():
             ticket_existente.estado_id = estado.id if estado else None
             ticket_existente.semaforo_id = semaforo.id if semaforo else None
             ticket_existente.firmado_id = firmado.id if firmado else None
+            ticket_existente.fecha_firmado = fecha_firmado
         else:
             # Si no existe, crear nuevo ticket
             nuevo_ticket = Ticket(
@@ -344,7 +377,8 @@ def actualizar_fila():
                 observaciones_ut=clean_value(data.get('Observaciones UT', '')) or '',
                 estado_id=estado.id if estado else None,
                 semaforo_id=semaforo.id if semaforo else None,
-                firmado_id=firmado.id if firmado else None
+                firmado_id=firmado.id if firmado else None,
+                fecha_firmado = fecha_firmado
             )
             db.session.add(nuevo_ticket)
         
@@ -377,12 +411,12 @@ def eliminar_fila():
     else:
         return jsonify({"error": "No se encontró el ticket"}), 404
     
-#Ruta para procesar solo el archivo de WO
+    
 @app.route('/subir_archivo', methods=['GET', 'POST'])
 def subir_archivo():
     try:
         if request.method == 'POST':
-            upload_simm_file = request.files['upload-file']
+            upload_simm_file = request.files.get('upload-file')
             
             if not upload_simm_file:
                 return jsonify({'message': 'No se recibió ningún archivo'}), 400
@@ -394,7 +428,7 @@ def subir_archivo():
             upload_simm_file.save(filepath)
             
             # Procesar el archivo y actualizar la BD
-            resultado = DataProcessor.procesar_archivo_simm(filepath)
+            resultado = processor.procesar_archivo_simm(filepath)
             
             if isinstance(resultado, str):
                 if resultado.startswith("Error"):
@@ -403,8 +437,14 @@ def subir_archivo():
                     return jsonify({'message': resultado}), 200
                 
             return jsonify({'message': 'Archivo procesado correctamente'}), 200
-            
+
         return render_template('index.html')
 
     except Exception as e:
         return jsonify({'message': f'Error al procesar el archivo: {str(e)}'}), 500
+
+@app.route('/resultados', methods=['GET'])
+def mostrar_resultados():
+    tickets = Ticket.query.order_by(Ticket.fecha_ultima_nota.desc()).all()
+
+    return render_template('resultado.html', datos=tickets)

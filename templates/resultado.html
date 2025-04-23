@@ -40,30 +40,30 @@
             <table class="table data" id="dataTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Solicitante</th>
-                        <th>WO</th>
-                        <th>REQ</th>
-                        <th>Fecha de creación</th>
-                        <th>Fecha Ultima Nota</th>
-                        <th>Descripción</th>
-                        <th>Detalle Ultima Nota</th>
-                        <th>Aplicación</th>
-                        <th>Estado</th>
-                        <th>Observaciones UT</th>
-                        <th>Entrega Alcance</th>
-                        <th>Fecha pruebas con SMM</th>
-                        <th>Fecha puesta en producción</th>
-                        <th>Observaciones</th>
-                        <th>Firmado</th>
-                        <th>Semáforo</th>
-                        <th>Acción</th>
+                        <th>ID</th> <!-- 1 -->
+                        <th>Solicitante</th> <!-- 2 -->
+                        <th>WO</th> <!-- 3 -->
+                        <th>REQ</th> <!-- 4 -->
+                        <th>Fecha de creación</th> <!-- 5 -->
+                        <th>Fecha Ultima Nota</th> <!-- 6 -->
+                        <th>Descripción</th> <!-- 7 -->
+                        <th>Detalle Ultima Nota</th> <!-- 8 -->
+                        <th>Aplicación</th> <!-- 9 -->
+                        <th>Estado</th> <!-- 10 -->
+                        <th>Observaciones UT</th> <!-- 11 -->
+                        <th>Entrega Alcance</th> <!-- 12 -->
+                        <th>Fecha pruebas con SMM</th> <!-- 13 -->
+                        <th>Fecha puesta en producción</th> <!-- 14 -->
+                        <th>Observaciones</th> <!-- 15 -->
+                        <th>Firmado</th> <!-- 16 -->
+                        <th>Semáforo</th> <!-- 17 -->
+                        <th>Acción</th> <!-- 18 -->
                     </tr>
                 </thead>
                 <tbody>
                     {% for ticket in datos %}
                     <tr id="table-row">
-                        <td><input type="text" class="form-control" value="{{ ticket.id }}" readonly></td>
+                        <td>{{ ticket.id }}</td>
                         <td>
                             <select class="form-select">
                                 <option value="" {% if ticket.solicitante_rel is none or ticket.solicitante_rel.nombre == '' %}selected{% endif %}></option>
@@ -102,6 +102,7 @@
                                 <option value="No Aplica" {% if ticket.firmado_rel and ticket.firmado_rel.nombre == 'No Aplica' %}selected{% endif %}>N/A</option>
                             </select>
                         </td>
+                        <input type="hidden" class="fecha-firmado" value="{{ ticket.fecha_firmado.strftime('%Y-%m-%d') if ticket.fecha_firmado else '' }}">
                         
 
                         <td data-semaforo="{{ ticket.semaforo_rel or 'rojo' }}">

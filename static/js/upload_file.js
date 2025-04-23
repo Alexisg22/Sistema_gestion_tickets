@@ -29,10 +29,12 @@ $('#upload_file').on('click', function () {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Error al subir el archivo')
-            return response.json()
-        })
+        .then(response => response.json().then(data => {
+            if (!response.ok) {
+                throw new Error(data.message || 'Error desconocido')
+            }
+            return data
+        }))
         .then(data => {
             console.log('Respuesta del servidor:', data)
             alert('Archivo subido exitosamente')
@@ -40,10 +42,10 @@ $('#upload_file').on('click', function () {
             location.reload()
         })
         .catch(error => {
-            console.error(error)
-            alert('Error al subir el archivo')
+            console.error('Error del servidor:', error)
+            alert(error.message)
         })
-
+        
     })
 
     // Cerrar modal con la X

@@ -5,7 +5,7 @@ $(document).ready(function() {
         let rowData = {};
         const headers = [];
         
-        // Obtener encabezados
+        // Obtener encabezados (incluidos los ocultos)
         $("#dataTable thead th").each(function() {
             headers.push($(this).text().trim());
         });
@@ -26,8 +26,14 @@ $(document).ready(function() {
             }
         });
         
+        // Añadir fecha de firmado si existe un input oculto para ello
+        const fechaFirmado = $(row).find(".fecha-firmado").val();
+        if (fechaFirmado) {
+            rowData["Fecha Firmado"] = fechaFirmado;
+        }
+        
         // Extraer WO para identificar la fila en el servidor
-        const woValue = $(row).find("td:nth-child(2) input").val();
+        const woValue = $(row).find("td:nth-child(3) input").val();
         
         // Enviar actualización al servidor
         $.ajax({
@@ -50,12 +56,22 @@ $(document).ready(function() {
         actualizarBaseDatos(row);
     });
     
-    // Detectar cambios en selects
+    // Modificar el manejador del evento change para selects
     $(document).on("change", "#dataTable select", function() {
         const row = $(this).closest("tr");
+        
+        // Comprobar si es la columna de firmado y si el valor es "Firmado SMM"
+        if ($(this).closest("td").index() === 15 && $(this).val() === "Firmado SMM") {
+            // Obtener la fecha actual en formato YYYY-MM-DD
+            const fechaActual = new Date().toISOString().split('T')[0];
+            
+            // Establecer la fecha de firmado (columna oculta)
+            row.find(".fecha-firmado").val(fechaActual);
+        }
+        
+        // Llamar a la función existente para actualizar la base de datos
         actualizarBaseDatos(row);
     });
-
     // Función para filtrar por semáforo
     $("#filtro-semaforo").change(function() {
         const valorFiltro = $(this).val();
@@ -80,10 +96,11 @@ $(document).ready(function() {
         applyLayout($("#select-layout").val());
     });
     
-    // Funcionalidad existente para agregar fila
+    // Funcionalidad para agregar fila
     $("#addRow").click(function() {
         $("#dataTable tbody").append(`
             <tr>
+                <td></td>
                 <td>
                     <select class="form-select">
                         <option value="">Seleccionar</option>
@@ -94,16 +111,16 @@ $(document).ready(function() {
                 </td>
                 <td><input type="text" class="form-control" value=""></td>
                 <td><input type="text" class="form-control" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
+                <td><input type="date" class="form-control" value="" required></td>
+                <td><input type="date" class="form-control" value="" required></td>
                 <td><input type="text" class="form-control description" value=""></td>
                 <td><input type="text" class="form-control detail" value=""></td>
                 <td><input type="text" class="form-control" value=""></td>
                 <td><input type="text" class="form-control" value=""></td>
                 <td><input type="text" class="form-control observations" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
+                <td><input type="date" class="form-control" value="" ></td>
+                <td><input type="date" class="form-control" value="" ></td>
+                <td><input type="date" class="form-control" value="" ></td>
                 <td>
                     <select class="form-select">
                         <option value=""></option>
@@ -151,8 +168,8 @@ $(document).ready(function() {
         let del = confirm('¿Estás seguro que deseas eliminar la fila?');
         if(del){
             const row = $(this).closest("tr");
-            const woValue = row.find("td:nth-child(2) input").val();
-            
+            const woValue = row.find("td:nth-child(3) input").val();
+            console.log(woValue)
             // Enviar solicitud para eliminar de la BD
             $.ajax({
                 url: "/eliminar_fila",
@@ -374,53 +391,24 @@ $(document).ready(function() {
 
     // Función para aplicar el diseño seleccionado
     function applyLayout(layout) {
-        // Primero mostrar todas las columnas para reiniciar
+        // Mostrar todas las columnas antes de aplicar filtro
         $("#dataTable th, #dataTable td").show();
-        
-        // Según el layout seleccionado, ocultar columnas específicas
-        switch(layout) {
-            case "Requisitos": // Requisitos y aprobaciones
-                $("#dataTable th:nth-child(3), #dataTable td:nth-child(3)").hide(); // REQ
-                $("#dataTable th:nth-child(4), #dataTable td:nth-child(4)").hide(); // Fecha Creación
-                $("#dataTable th:nth-child(5), #dataTable td:nth-child(5)").hide(); // Fecha Última Nota
-                $("#dataTable th:nth-child(6), #dataTable td:nth-child(6)").hide(); // Descripción
-                $("#dataTable th:nth-child(7), #dataTable td:nth-child(7)").hide(); // Detalle Última Nota
-                $("#dataTable th:nth-child(9), #dataTable td:nth-child(9)").hide(); // Tipo
-                $("#dataTable th:nth-child(12), #dataTable td:nth-child(12)").hide(); // Fecha pruebas con SMM
-                $("#dataTable th:nth-child(13), #dataTable td:nth-child(13)").hide(); // Fecha puesta en producción
-                $("#dataTable th:nth-child(16), #dataTable td:nth-child(16)").hide(); // Origen
-                $("#dataTable th:nth-child(17), #dataTable td:nth-child(17)").hide(); // Semáforo
-                break;
-                
-            case "Cronogramas":
-                $("#dataTable th:nth-child(3), #dataTable td:nth-child(3)").hide(); // REQ
-                $("#dataTable th:nth-child(4), #dataTable td:nth-child(4)").hide(); // Fecha Creación
-                $("#dataTable th:nth-child(5), #dataTable td:nth-child(5)").hide(); // Fecha Última Nota
-                $("#dataTable th:nth-child(6), #dataTable td:nth-child(6)").hide(); // Descripción
-                $("#dataTable th:nth-child(7), #dataTable td:nth-child(7)").hide(); // Detalle Última Nota
-                $("#dataTable th:nth-child(9), #dataTable td:nth-child(9)").hide(); // Tipo
-                $("#dataTable th:nth-child(14), #dataTable td:nth-child(14)").hide(); // Observaciones
-                $("#dataTable th:nth-child(15), #dataTable td:nth-child(15)").hide(); // Firmado
-                $("#dataTable th:nth-child(16), #dataTable td:nth-child(16)").hide(); // Origen
-                $("#dataTable th:nth-child(17), #dataTable td:nth-child(17)").hide(); // Semáforo
-                break;
-                
-            case "Seguimiento":
-                $("#dataTable th:nth-child(8), #dataTable td:nth-child(8)").hide(); // Aplicación
-                $("#dataTable th:nth-child(9), #dataTable td:nth-child(9)").hide(); // Tipo
-                $("#dataTable th:nth-child(10), #dataTable td:nth-child(10)").hide(); // Observaciones UT
-                $("#dataTable th:nth-child(11), #dataTable td:nth-child(11)").hide(); // Entrega Alcance
-                $("#dataTable th:nth-child(12), #dataTable td:nth-child(12)").hide(); // Fecha pruebas con SMM
-                $("#dataTable th:nth-child(13), #dataTable td:nth-child(13)").hide(); // Fecha puesta en producción
-                $("#dataTable th:nth-child(14), #dataTable td:nth-child(14)").hide(); // Observaciones
-                $("#dataTable th:nth-child(15), #dataTable td:nth-child(15)").hide(); // Firmado
-                $("#dataTable th:nth-child(16), #dataTable td:nth-child(16)").hide(); // Origen
-                $("#dataTable th:nth-child(17), #dataTable td:nth-child(17)").hide(); // Semáforo
-                break;
-                
-            case "General":
-            default:
-                break;
+    
+        // Columnas a mostrar por layout
+        const columnsByLayout = {
+            Requisitos: [1, 2, 3, 9, 11, 12, 15, 16, 17, 18], // Solicitante, WO, Aplicación, Entrega Alcance, Observaciones, Firmado, Observaciones UT
+            Cronogramas: [1, 2, 3, 9, 12, 13, 14, 11, 17, 18], // Solicitante, WO, Aplicación, Entrega Alcance, Fecha pruebas, Producción, Observaciones UT
+            Seguimiento: [1, 2, 3, 4, 5, 6, 7, 8, 17, 18], // Solicitante, WO, REQ, Fecha creación, Última nota, Descripción, Detalle
+            General: [] // No ocultamos nada
+        };
+    
+        const totalCols = $("#dataTable th").length;
+        const keep = columnsByLayout[layout] || [];
+    
+        for (let i = 1; i <= totalCols; i++) {
+            if (keep.length && !keep.includes(i)) {
+                $(`#dataTable th:nth-child(${i}), #dataTable td:nth-child(${i})`).hide();
+            }
         }
     }
 });
