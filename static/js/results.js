@@ -5,7 +5,7 @@ $(document).ready(function() {
         let rowData = {};
         const headers = [];
         
-        // Obtener encabezados
+        // Obtener encabezados (incluidos los ocultos)
         $("#dataTable thead th").each(function() {
             headers.push($(this).text().trim());
         });
@@ -26,8 +26,14 @@ $(document).ready(function() {
             }
         });
         
+        // Añadir fecha de firmado si existe un input oculto para ello
+        const fechaFirmado = $(row).find(".fecha-firmado").val();
+        if (fechaFirmado) {
+            rowData["Fecha Firmado"] = fechaFirmado;
+        }
+        
         // Extraer WO para identificar la fila en el servidor
-        const woValue = $(row).find("td:nth-child(2) input").val();
+        const woValue = $(row).find("td:nth-child(3) input").val();
         
         // Enviar actualización al servidor
         $.ajax({
@@ -50,12 +56,22 @@ $(document).ready(function() {
         actualizarBaseDatos(row);
     });
     
-    // Detectar cambios en selects
+    // Modificar el manejador del evento change para selects
     $(document).on("change", "#dataTable select", function() {
         const row = $(this).closest("tr");
+        
+        // Comprobar si es la columna de firmado y si el valor es "Firmado SMM"
+        if ($(this).closest("td").index() === 15 && $(this).val() === "Firmado SMM") {
+            // Obtener la fecha actual en formato YYYY-MM-DD
+            const fechaActual = new Date().toISOString().split('T')[0];
+            
+            // Establecer la fecha de firmado (columna oculta)
+            row.find(".fecha-firmado").val(fechaActual);
+        }
+        
+        // Llamar a la función existente para actualizar la base de datos
         actualizarBaseDatos(row);
     });
-
     // Función para filtrar por semáforo
     $("#filtro-semaforo").change(function() {
         const valorFiltro = $(this).val();
@@ -80,7 +96,7 @@ $(document).ready(function() {
         applyLayout($("#select-layout").val());
     });
     
-    // Funcionalidad existente para agregar fila
+    // Funcionalidad para agregar fila
     $("#addRow").click(function() {
         $("#dataTable tbody").append(`
             <tr>
@@ -151,8 +167,8 @@ $(document).ready(function() {
         let del = confirm('¿Estás seguro que deseas eliminar la fila?');
         if(del){
             const row = $(this).closest("tr");
-            const woValue = row.find("td:nth-child(2) input").val();
-            
+            const woValue = row.find("td:nth-child(3) input").val();
+            console.log(woValue)
             // Enviar solicitud para eliminar de la BD
             $.ajax({
                 url: "/eliminar_fila",

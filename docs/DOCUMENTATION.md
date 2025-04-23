@@ -1,4 +1,22 @@
-# Documentación Técnica - Sistema de Gestión de Tickets
+# Sistema de Gestión de Tickets - Documentación Técnica
+
+## Índice
+1. [Visión General](#visión-general)
+2. [Estructura del Proyecto](#estructura-del-proyecto)
+3. [Arquitectura del Sistema](#arquitectura-del-sistema)
+4. [Modelos de Datos](#modelos-de-datos)
+5. [Procesamiento de Datos](#procesamiento-de-datos)
+6. [API Web (Flask)](#api-web-flask)
+7. [Utilidades de Formato](#utilidades-de-formato)
+8. [Flujo de Trabajo Principal](#flujo-de-trabajo-principal)
+9. [Interfaz de Usuario](#interfaz-de-usuario)
+10. [Tecnologías Utilizadas](#tecnologías-utilizadas)
+11. [Instalación y Configuración](#instalación-y-configuración)
+12. [Consideraciones Técnicas](#consideraciones-técnicas)
+
+## Visión General
+
+El Sistema de Gestión de Tickets es una aplicación web desarrollada con Flask que permite gestionar tickets de trabajo, procesar datos desde archivos Excel, y generar reportes formateados. La aplicación sigue un patrón MVC adaptado a Flask y utiliza SQLAlchemy como ORM para la gestión de base de datos.
 
 ## Estructura del Proyecto
 
@@ -10,13 +28,15 @@
 ├── static/
 │   ├── css/
 │   │   ├── index.css
-│   │   └── style.css
+│   │   ├── style.css
 │   │   └── error.css
 │   └── js/
-│       └── results.js
+│       ├── results.js
+│       └── upload_file.js   
+│      
 ├── templates/
 │   ├── index.html
-│   └── results.html
+│   ├── results.html
 │   └── error.html
 ├── app.py
 ├── .gitignore
@@ -25,145 +45,251 @@
 └── requirements.txt
 ```
 
-## Descripción General
+## Arquitectura del Sistema
 
-Este sistema permite cargar, procesar y gestionar tickets de trabajo (WO) desde archivos Excel, aplicando filtrado por semáforo (indicadores de estado basados en tiempo) y diferentes vistas según el tipo de información que se necesite visualizar. La aplicación permite la importación desde dos fuentes (tickets de seguimiento y tickets SIMM), unifica la información, y ofrece una interfaz para su manipulación.
+### Patrón MVC
 
-## Componentes Principales
+El sistema sigue un patrón MVC (Modelo-Vista-Controlador) adaptado al contexto de Flask:
+- **Modelos**: Definidos utilizando SQLAlchemy ORM
+- **Vistas**: Plantillas HTML renderizadas por Flask
+- **Controladores**: Rutas de Flask que manejan las solicitudes HTTP
 
-### Backend (app.py)
+### Componentes Principales
 
-El servidor está construido con Flask y maneja:
-- Carga y procesamiento de archivos Excel
-- Combinación de datos de diferentes fuentes
-- Transformación y normalización de datos
-- Cálculo de indicadores de semáforo basados en antigüedad
-- APIs para actualizar y descargar datos
+1. **Aplicación Web Flask**: Proporciona la interfaz de usuario y maneja las solicitudes HTTP
+2. **Modelos de Base de Datos**: Define la estructura de datos y las relaciones entre entidades
+3. **Procesamiento de Datos**: Herramientas para importar, procesar y exportar datos desde/hacia archivos Excel
+4. **Formateo de Salida**: Componentes para formatear los archivos Excel descargados
 
-#### Funciones Clave
+## Modelos de Datos
 
-1. **`process_df_final(df)`**: Unifica tickets duplicados y actualiza el campo "Detalle Ultima Nota".
-2. **`upload_file()`**: Maneja la carga de archivos, procesa los Excel y genera el DataFrame resultante.
-3. **`upload_data()`**: Actualiza los datos modificados en la interfaz.
-4. **`descargar()`**: Permite la descarga del archivo Excel procesado.
-5. **`apply_excel_format`**: Aplica formato y estilado al archivo descargado.
+### Modelo Ticket
 
-El servidor se encarga también de:
-- Aplicar filtros de antigüedad (semáforo) a los tickets
-- Eliminar tickets cerrados con más de 30 días
-- Ordenar los tickets por fecha de última nota
+El modelo principal que almacena la información detallada de cada ticket de trabajo:
 
-### Frontend
+```python
+class Ticket(db.Model):
+    __tablename__ = 'tickets'
+    
+    id = Column(Integer, primary_key=True)
+    wo = Column(String(50), unique=True, nullable=False)  
+    req = Column(String(50))                    
+    fecha_creacion = Column(DateTime)                
+    fecha_ultima_nota = Column(DateTime)                 
+    descripcion = Column(Text)                 
+    aplicacion = Column(String(100))        
+    detalle_ultima_nota = Column(Text)            
+    
+    # Fechas de planificación
+    entrega_alcance = Column(DateTime)               
+    puesta_produccion = Column(DateTime)              
+    pruebas_simm = Column(DateTime)               
+    
+    # Relaciones con otras entidades
+    solicitante_id = Column(Integer, ForeignKey('solicitantes.id'))
+    solicitante_rel = relationship('Solicitante', back_populates='tickets')
+    
+    firmado_id = Column(Integer, ForeignKey('estados_firmado.id'), default='1')
+    firmado_rel = relationship('EstadoFirmado', back_populates='tickets')
+    
+    semaforo_id = Column(Integer, ForeignKey('semaforos.id'))
+    semaforo_rel = relationship('Semaforo', back_populates='tickets')
+    
+    estado_id = Column(Integer, ForeignKey('estados.id'))
+    estado_rel = relationship('Estado', back_populates='tickets')
+    
+    observaciones = Column(String(20))          
+    observaciones_ut = Column(Text)                     
+    created_at = Column(DateTime, default=datetime.now) 
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)  
+```
 
-#### Páginas HTML
+### Modelos de Referencia
 
-1. **`index.html`** (templates/):
-   - Formulario para cargar los archivos Excel iniciales
-   - Interfaz inicial del sistema
+Para mantener la integridad referencial y facilitar la categorización:
 
-2. **`results.html`** (templates/):
-   - Tabla interactiva para mostrar y editar los tickets procesados
-   - Controles para filtrado y cambio de vista
-   - Funcionalidades para agregar o eliminar filas
+1. **Solicitante**: Entidad que solicitó el ticket (ESI, SIMM, SMM)
+2. **EstadoFirmado**: Estado de firma del ticket (Firmado SMM, Pendiente, Firmado ESI)
+3. **Semaforo**: Clasificación visual basada en la antigüedad de la última nota
+4. **Estado**: Estado actual del ticket (Pendiente, En progreso, Completado, Rechazado)
 
-#### Estilos CSS
+## Procesamiento de Datos
 
-1. **`index.css`** (static/css/):
-   - Estilos para la página de carga de archivos
+### Clase DataProcessor
 
-2. **`style.css`** (static/css/):
-   - Estilos para la tabla de resultados
-   - Estilos para modales de edición
-   - Formateo de colores para semáforo
+Esta clase contiene métodos estáticos para procesar datos entre archivos Excel y la base de datos.
 
-#### JavaScript (results.js)
+#### Métodos Principales:
 
-El archivo `results.js` contiene la lógica de la interfaz de usuario e incluye:
+- **prepare_data(file1_path, file2_path)**: Prepara datos combinando dos archivos Excel (archivo SIMM y archivo de seguimiento)
+- **procesar_datos_finales(df_final)**: Procesa los datos combinados, aplicando reglas de negocio
+- **process_df_final(df)**: Unifica las notas para cada WO y obtiene la información más reciente
+- **procesar_archivo_simm(file_path)**: Procesa solo el archivo SIMM y actualiza la base de datos
 
-1. **Filtrado por semáforo**:
-   - Función para ocultar/mostrar filas según el color del semáforo seleccionado
+#### Cálculo de Semáforo:
 
-2. **Gestión de vistas**:
-   - Función `applyLayout()` que muestra/oculta columnas según el layout seleccionado (General, Requisitos, Cronogramas, Seguimiento)
+El semáforo se calcula en base a la antigüedad de la última nota:
+- **Verde**: Menos de 30 días
+- **Naranja**: Entre 30 y 60 días
+- **Rojo**: Más de 60 días
+- **Sin fecha**: No hay fecha de última nota
 
-3. **Edición de datos**:
-   - Manejo de modales para campos con texto largo (Descripción, Detalle Última Nota, Observaciones)
-   - Edición in-line para campos cortos
-   - Función para editar el semáforo mediante selector
+### Conversión de Datos y Manejo de Fechas
 
-4. **Manipulación de filas**:
-   - Funcionalidad para agregar nuevas filas
-   - Funcionalidad para eliminar filas existentes
+El sistema maneja cuidadosamente la conversión entre diferentes formatos de datos, especialmente las fechas:
 
-5. **Guardado y descarga**:
-   - Recopilación de datos modificados
-   - Envío al servidor para actualización
-   - Descarga del archivo Excel resultante
+```python
+def clean_value(value):
+    if pd.isna(value):
+        return None
+    return value
 
-## Flujo de Datos
+# Convertir fechas de string a objetos datetime
+fecha_creacion = None
+if item.get('Fecha de creación') and not pd.isna(item.get('Fecha de creación')):
+    try:
+        fecha_creacion = datetime.strptime(str(item.get('Fecha de creación')), '%Y-%m-%d')
+    except (ValueError, TypeError):
+        fecha_creacion = None
+```
 
-1. **Carga de archivos**:
-   - Usuario sube archivos de seguimiento y SIMM WO
-   - El backend procesa ambos archivos
+## API Web (Flask)
+
+### Rutas Principales
+
+La aplicación Flask proporciona varias rutas para interactuar con el sistema:
+- **/** : Página inicial, muestra tickets existentes o formulario de carga
+- **/upload_file** : Procesa la carga de dos archivos Excel (SIMM y seguimiento)
+- **/actualizar_datos** : Actualiza datos en masa (archivo y base de datos)
+- **/descargar** : Descarga el archivo resultante con formato aplicado
+- **/actualizar_fila** : Actualiza una fila específica en la base de datos
+- **/eliminar_fila** : Elimina un ticket específico
+- **/subir_archivo** : Procesa la carga de solo el archivo SIMM
+
+### Controlador para actualizar datos:
+
+```python
+@app.route('/actualizar_datos', methods=['POST'])
+def actualizar_datos():
+    data = request.json.get("datos", [])
+    headers = request.json.get("headers", [])
+    
+    # Crea DataFrame con datos actualizados
+    df_actualizado = pd.DataFrame(data)
+    
+    # Guarda el archivo actualizado
+    archivo_guardado = os.path.join(app.config['UPLOAD_FOLDER'], 'resultado_procesado.xlsx')
+    df_actualizado.to_excel(archivo_guardado, index=False)
+    
+    # Actualiza la base de datos
+    for item in data:
+        ticket_existente = Ticket.query.filter_by(wo=item.get('WO')).first()
+        
+        # Obtiene o crea las relaciones
+        solicitante = get_or_create_solicitante(item.get('Solicitante', ''))
+        firmado = get_or_create_firmado(item.get('Firmado', ''))
+        semaforo = get_or_create_semaforo(item.get('Semáforo', ''))
+        estado = get_or_create_estado(item.get('Estado', ''))
+        
+        # Procesa fechas y actualiza el ticket
+        # ... (código de conversión de fechas)
+        
+        if ticket_existente:
+            # Actualiza ticket existente
+            # ... (código de actualización)
+        else:
+            # Crea nuevo ticket
+            # ... (código de creación)
+    
+    db.session.commit()
+    return jsonify({"message": "Datos actualizados correctamente"}), 200
+```
+
+## Utilidades de Formato
+
+### Clase ExcelFormatter
+
+Esta clase se encarga de aplicar formato visual a los archivos Excel exportados:
+- Estilo para encabezados (color, fuente, bordes)
+- Ajuste de ancho de columnas
+- Formato condicional para celdas basado en valores (semáforo)
+- Aplicación de filtros y paneles congelados
+
+```python
+@staticmethod
+def _format_cell_content(ws):
+    # ... (configuración de estilos)
+    
+    # Aplica colores según semáforo
+    for row in range(2, ws.max_row + 1):
+        if semaforo_col:
+            cell = ws.cell(row=row, column=semaforo_col)
+            valor = cell.value
+            if valor == "verde":
+                cell.fill = verde_fill
+            elif valor == "naranja":
+                cell.fill = naranja_fill
+            elif valor == "rojo":
+                cell.fill = rojo_fill
+```
+
+## Inicialización de Datos Maestros
+
+El módulo `init_db.py` contiene funciones para inicializar y gestionar los datos maestros del sistema:
+
+```python
+def inicializar_datos_maestros():
+    # Inicializar solicitantes
+    solicitantes = [
+        {"nombre": "ESI"},
+        {"nombre": "SIMM"},
+        {"nombre": "SMM"}
+    ]
+    
+    # ... (inicialización de otras entidades)
+    
+    # Confirmar cambios
+    db.session.commit()
+```
+
+## Flujo de Trabajo Principal
+
+1. **Carga de Datos**:
+   - Usuario carga archivos Excel (SIMM y seguimiento)
+   - Los datos se procesan y combinan
 
 2. **Procesamiento**:
-   - Combinación de DataFrames
-   - Unificación de tickets duplicados
-   - Cálculo de semáforos por antigüedad
+   - Se aplican reglas de negocio (cálculo de semáforo, unificación de notas)
+   - Se filtran y limpian los datos
 
-3. **Visualización**:
-   - Renderizado de datos en tabla
-   - Aplicación de filtros y layouts
+3. **Almacenamiento**:
+   - Los tickets se guardan en la base de datos
+   - Se actualiza el archivo de resultado
 
-4. **Manipulación**:
-   - Usuario edita datos, agrega o elimina filas
-   - Los cambios se mantienen en memoria
+4. **Interacción**:
+   - Usuario puede modificar datos individualmente
+   - Se pueden eliminar tickets
 
-5. **Guardado**:
-   - Al descargar, se envían todos los datos visibles
-   - Se genera un nuevo Excel con la información actualizada
+5. **Exportación**:
+   - Usuario descarga archivo formateado de resultados con el nombre de "Seguimiento_final_dd/mm/aaaa"
 
-## Procesamiento de Tickets
+## Interfaz de Usuario
 
-### Cálculo de Semáforo
-
-El sistema asigna un color de semáforo basado en la antigüedad del ticket:
-- **Verde**: Tickets con última nota de menos de 30 días
-- **Naranja**: Tickets con última nota entre 31 y 60 días
-- **Rojo**: Tickets con última nota de más de 60 días
-- **Sin fecha**: Tickets sin fecha de última nota
-
-### Unificación de Tickets
-
-Para tickets con el mismo código de WO:
-- Se mantiene la información más reciente
-- Se concatenan los detalles de última nota, separados por "|"
-- Se aplica un manejo especial para tickets con estado "cerrado"
-
-## APIs y Endpoints
-
-1. **`/`** (GET, POST):
-   - GET: Muestra la página inicial para cargar archivos
-   - POST: Procesa los archivos subidos y redirige a resultados
-
-2. **`/actualizar_datos`** (POST):
-   - Recibe los datos modificados en formato JSON
-   - Actualiza el Excel en memoria
-
-3. **`/descargar`** (GET):
-   - Genera y devuelve el archivo Excel actualizado
-
-## Modales de Edición
+### Modales de Edición
 
 La aplicación implementa tres tipos de modales para campos con texto extenso:
 1. **Modal de Descripción**: Para editar la descripción completa del ticket
 2. **Modal de Detalle Última Nota**: Para editar el detalle de la última actualización
 3. **Modal de Observaciones UT**: Para editar observaciones específicas
 
+## Nota
+solo se tienen en cuenta los tickets del  'Archivo SIMM - Reporte WO' que en la columna Categorización N1 su valor es Aplicación 
+
 ## Tecnologías Utilizadas
 
 - **Backend**: Python 3, Flask, Pandas
 - **Frontend**: HTML5, CSS3, JavaScript, jQuery
+- **Base de datos**: SQLite 
 - **Librerías adicionales**: Bootstrap 5.3
 - **Formato de datos**: Excel (.xlsx)
 
@@ -193,7 +319,11 @@ La aplicación implementa tres tipos de modales para campos con texto extenso:
 
 ## Consideraciones Técnicas
 
-1. **Manejo de memoria**: Los archivos procesados se almacenan temporalmente en la carpeta de Descargas del usuario.
-2. **Duplicación de tickets**: El sistema maneja la unificación de tickets duplicados automáticamente.
-3. **Interacción entre jQuery y Flask**: La comunicación de datos entre frontend y backend se realiza mediante AJAX con formato JSON.
-4. **Seguridad**: No hay implementación de autenticación de usuarios en esta versión.
+1. **Manejo de Errores**: El código implementa bloques try-except para capturar y manejar errores.
+2. **Transacciones de Base de Datos**: Uso de commit/rollback para mantener la integridad de los datos.
+3. **Validación de Datos**: Limpieza y validación de valores antes de procesarlos.
+4. **Formateo Visual**: Aplicación de estilos consistentes para mejorar la experiencia del usuario.
+5. **Manejo de memoria**: Los archivos procesados se almacenan temporalmente en la carpeta de Descargas del usuario.
+6. **Duplicación de tickets**: El sistema maneja la unificación de tickets duplicados automáticamente.
+7. **Interacción entre jQuery y Flask**: La comunicación de datos entre frontend y backend se realiza mediante AJAX con formato JSON.
+8. **Seguridad**: No hay implementación de autenticación de usuarios en esta versión.

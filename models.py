@@ -3,6 +3,27 @@ from datetime import datetime
 from db import db, Ticket
 
 class DataProcessor:
+    #Método para los colores del semáforo 
+    @staticmethod
+    def semaforo_colores(fecha):
+        hoy = datetime.now()
+        if pd.isnull(fecha):
+            return "sin fecha"
+        diferencia = (hoy - fecha).days
+        if diferencia <= 30:
+            return "verde"
+        elif 30 < diferencia <= 60:
+            return "naranja"
+        else:
+            return "rojo"
+        
+    @staticmethod
+    def borarr_firmados(fecha):
+        hoy = datetime.now()
+        diferencia = (hoy - fecha).days
+        if diferencia <= 30:
+            return 
+        
     @staticmethod
     def process_df_final(df):
         reply_tickets = {}
@@ -15,10 +36,10 @@ class DataProcessor:
                 estado = str(row['Estado']).strip().lower()
 
                 if estado == 'cerrado':
-                    detalle = estado + " | " + detalle
+                    detalle = estado + "\n" + detalle
 
                 if wo in reply_tickets:
-                    reply_tickets[wo] += " | " + detalle
+                    reply_tickets[wo] += "\n" + detalle
                 else:
                     reply_tickets[wo] = detalle
 
@@ -81,8 +102,6 @@ class DataProcessor:
             'Tipo': 'Estado'
         }, inplace=True)
 
-        print(df_seguimiento.columns)
-        print(df_simm.columns)
         
         # Añadir columnas adicionales
         df_simm['Solicitante'] = ''
@@ -93,12 +112,10 @@ class DataProcessor:
         
         # Combinar DataFrames
         df_final = pd.concat([df_seguimiento, df_simm], ignore_index=True)
-        print(df_final)
         
         return df_final
     
-    @staticmethod
-    def procesar_datos_finales(df_final):
+    def procesar_datos_finales(self, df_final):
         # Validar solicitante
         def validar_solicitante(valor):
             return valor if valor in ['ESI', 'SIMM', 'SMM'] else ''
@@ -114,7 +131,7 @@ class DataProcessor:
         df_final = df_final.sort_values('Fecha Ultima Nota', ascending=False).reset_index(drop=True)
         
         # Unificar tickets duplicados
-        df_final = DataProcessor.process_df_final(df_final)
+        df_final = self.__class__.process_df_final(df_final)
         
         # Eliminar duplicados
         df_final = df_final.drop_duplicates(subset=['WO'], keep='first')
@@ -122,25 +139,15 @@ class DataProcessor:
         # Calcular semáforo
         hoy = datetime.now()
         
-        def semaforo_colores(fecha):
-            if pd.isnull(fecha):
-                return "sin fecha"
-            diferencia = (hoy - fecha).days
-            if diferencia <= 30:
-                return "verde"
-            elif 30 < diferencia <= 60:
-                return "naranja"
-            else:
-                return "rojo"
                 
-        df_final['Semáforo'] = df_final['Fecha Ultima Nota'].apply(semaforo_colores)
+        df_final['Semáforo'] = df_final['Fecha Ultima Nota'].apply(self.__class__.semaforo_colores)
         
         # Limpiar campos Firmado
         df_final['Firmado'] = df_final['Firmado'].astype(str).str.strip()
         
-        # Filtrar tickets firmados antiguos
-        df_final = df_final[~((df_final['Firmado'] == 'Firmado SMM') & 
-                             ((hoy - df_final['Fecha Ultima Nota']).dt.days > 30))]
+        # # Filtrar tickets firmados antiguos
+        # df_final = df_final[~((df_final['Firmado'] == 'Firmado SMM') & 
+        #                      ((hoy - df_final['Fecha Ultima Nota']).dt.days > 30))]
         
         # Formatear fechas
         df_final['Fecha Ultima Nota'] = df_final['Fecha Ultima Nota'].dt.strftime('%Y-%m-%d').fillna("")
@@ -149,8 +156,7 @@ class DataProcessor:
         return df_final
 
     #Método para procesar el archivo de WO y validar con la BD
-    @staticmethod
-    def procesar_archivo_simm(file_path):
+    def procesar_archivo_simm(self, file_path):
         try:
             # 1. Leer el archivo SIMM
             df_simm = pd.read_excel(file_path, skiprows=4)
@@ -233,7 +239,7 @@ class DataProcessor:
             df_final = df_final.sort_values('Fecha Ultima Nota', ascending=False).reset_index(drop=True)
             
             # Unificar tickets duplicados
-            df_final = DataProcessor.process_df_final(df_final)
+            df_final = self.__class__.process_df_final(df_final)
             
             # Eliminar duplicados
             df_final = df_final.drop_duplicates(subset=['WO'], keep='first')
@@ -241,25 +247,15 @@ class DataProcessor:
             # Calcular semáforo
             hoy = datetime.now()
             
-            def semaforo_colores(fecha):
-                if pd.isnull(fecha):
-                    return "sin fecha"
-                diferencia = (hoy - fecha).days
-                if diferencia <= 30:
-                    return "verde"
-                elif 30 < diferencia <= 60:
-                    return "naranja"
-                else:
-                    return "rojo"
                     
-            df_final['Semáforo'] = df_final['Fecha Ultima Nota'].apply(semaforo_colores)
+            df_final['Semáforo'] = df_final['Fecha Ultima Nota'].apply(self.__class__.semaforo_colores)
             
             # Limpiar campos Firmado
             df_final['Firmado'] = df_final['Firmado'].astype(str).str.strip()
             
             # Filtrar tickets firmados antiguos
-            df_final = df_final[~((df_final['Firmado'] == 'Firmado SMM') & 
-                            ((hoy - df_final['Fecha Ultima Nota']).dt.days > 30))]
+            # df_final = df_final[~((df_final['Firmado'] == 'Firmado SMM') & 
+            #                 ((hoy - df_final['Fecha Ultima Nota']).dt.days > 30))]
             
             # Formatear fechas
             df_final['Fecha Ultima Nota'] = df_final['Fecha Ultima Nota'].dt.strftime('%Y-%m-%d').fillna("")

@@ -74,6 +74,7 @@ class Ticket(db.Model):
     
     firmado_id = Column(Integer, ForeignKey('estados_firmado.id'), default='1')
     firmado_rel = relationship('EstadoFirmado', back_populates='tickets')
+    fecha_firmado = Column(DateTime)
     
     semaforo_id = Column(Integer, ForeignKey('semaforos.id'))
     semaforo_rel = relationship('Semaforo', back_populates='tickets')

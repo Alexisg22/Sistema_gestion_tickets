@@ -102,6 +102,7 @@
                                 <option value="No Aplica" {% if ticket.firmado_rel and ticket.firmado_rel.nombre == 'No Aplica' %}selected{% endif %}>N/A</option>
                             </select>
                         </td>
+                        <input type="hidden" class="fecha-firmado" value="{{ ticket.fecha_firmado.strftime('%Y-%m-%d') if ticket.fecha_firmado else '' }}">
                         
 
                         <td data-semaforo="{{ ticket.semaforo_rel or 'rojo' }}">
