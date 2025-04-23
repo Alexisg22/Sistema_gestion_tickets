@@ -28,6 +28,18 @@ def initial():
         # if request.method == 'GET':
         #     return render_template('resultado.html', datos=tickets)
         try:
+            #Eliminar tickets sin fecha y sin wo para evitar errores
+            Ticket.query.filter(
+                Ticket.fecha_creacion == None
+            ).delete(synchronize_session=False)
+
+            Ticket.query.filter(
+                Ticket.fecha_ultima_nota == None
+            ).delete(synchronize_session=False)
+            
+            Ticket.query.filter(
+                Ticket.wo == None
+            ).delete(synchronize_session=False)
             # Calcular fecha límite (30 días atrás desde hoy)
             limite_fecha = datetime.now() - timedelta(days=30)
 
@@ -41,8 +53,8 @@ def initial():
                     Ticket.fecha_firmado != None,
                     Ticket.fecha_firmado < limite_fecha
                 ).delete(synchronize_session=False)
-                db.session.commit()
 
+            db.session.commit()
             # Obtener y ordenar tickets por fecha
 
             # Actualizar semáforo de cada ticket
@@ -58,6 +70,7 @@ def initial():
         except Exception as e:
             print(f"Error: {e}")
             return render_template('index.html')
+        
 
 @app.route('/upload_file', methods=['GET', 'POST'])
 def upload_file():
@@ -429,3 +442,9 @@ def subir_archivo():
 
     except Exception as e:
         return jsonify({'message': f'Error al procesar el archivo: {str(e)}'}), 500
+
+@app.route('/resultados', methods=['GET'])
+def mostrar_resultados():
+    tickets = Ticket.query.order_by(Ticket.fecha_ultima_nota.desc()).all()
+
+    return render_template('resultado.html', datos=tickets)

@@ -100,6 +100,7 @@ $(document).ready(function() {
     $("#addRow").click(function() {
         $("#dataTable tbody").append(`
             <tr>
+                <td></td>
                 <td>
                     <select class="form-select">
                         <option value="">Seleccionar</option>
@@ -110,16 +111,16 @@ $(document).ready(function() {
                 </td>
                 <td><input type="text" class="form-control" value=""></td>
                 <td><input type="text" class="form-control" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
+                <td><input type="date" class="form-control" value="" required></td>
+                <td><input type="date" class="form-control" value="" required></td>
                 <td><input type="text" class="form-control description" value=""></td>
                 <td><input type="text" class="form-control detail" value=""></td>
                 <td><input type="text" class="form-control" value=""></td>
                 <td><input type="text" class="form-control" value=""></td>
                 <td><input type="text" class="form-control observations" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
-                <td><input type="date" class="form-control" value=""></td>
+                <td><input type="date" class="form-control" value="" ></td>
+                <td><input type="date" class="form-control" value="" ></td>
+                <td><input type="date" class="form-control" value="" ></td>
                 <td>
                     <select class="form-select">
                         <option value=""></option>

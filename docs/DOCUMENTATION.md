@@ -282,8 +282,9 @@ La aplicación implementa tres tipos de modales para campos con texto extenso:
 2. **Modal de Detalle Última Nota**: Para editar el detalle de la última actualización
 3. **Modal de Observaciones UT**: Para editar observaciones específicas
 
-## Nota
-solo se tienen en cuenta los tickets del  'Archivo SIMM - Reporte WO' que en la columna Categorización N1 su valor es Aplicación 
+## Notas
+- solo se tienen en cuenta los tickets del  'Archivo SIMM - Reporte WO' que en la columna Categorización N1 su valor es Aplicación 
+- al agregar una nueva fila en la tabla verificar que los campos WO, fecha de creación y fecha ultima nota no queden vacíos, de lo contrario el ticket no se guardará correctamente
 
 ## Tecnologías Utilizadas
 
