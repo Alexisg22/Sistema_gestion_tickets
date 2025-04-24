@@ -5,7 +5,10 @@ class Config:
     UPLOAD_FOLDER = os.path.join(os.path.expanduser("~"), "Downloads")
     
     # Configuración de la base de datos
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(os.path.expanduser("~"), "Downloads", "db_tickets.db")
+    basedir = os.path.abspath(os.path.dirname(__file__))
+
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'sqlite:///' + os.path.join(basedir, 'db_tickets.db')
     # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'postgresql://postgres:@localhost:5432/db_tickets'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
