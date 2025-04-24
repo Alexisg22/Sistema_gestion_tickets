@@ -56,17 +56,20 @@ $(document).ready(function() {
         actualizarBaseDatos(row);
     });
     
-    // Modificar el manejador del evento change para selects
     $(document).on("change", "#dataTable select", function() {
         const row = $(this).closest("tr");
         
-        // Comprobar si es la columna de firmado y si el valor es "Firmado SMM"
-        if ($(this).closest("td").index() === 15 && $(this).val() === "Firmado SMM") {
-            // Obtener la fecha actual en formato YYYY-MM-DD
-            const fechaActual = new Date().toISOString().split('T')[0];
-            
-            // Establecer la fecha de firmado (columna oculta)
-            row.find(".fecha-firmado").val(fechaActual);
+        // Comprobar si es la columna de firmado (índice 15)
+        if ($(this).closest("td").index() === 15) {
+            // Si es "Firmado SMM", establecer la fecha actual
+            if ($(this).val() === "Firmado SMM") {
+                const fechaActual = new Date().toISOString().split('T')[0];
+                row.find(".fecha-firmado").val(fechaActual);
+            } 
+            // Si es cualquier otro valor, establecer la fecha como vacía (null)
+            else {
+                row.find(".fecha-firmado").val("");
+            }
         }
         
         // Llamar a la función existente para actualizar la base de datos

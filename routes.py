@@ -290,7 +290,7 @@ def actualizar_fila():
 
         # Procesar la fecha de firmado
         fecha_firmado = None
-        if data.get('Fecha Firmado') and data.get('Fecha Firmado') != '' and not pd.isna(data.get('Fecha Firmado')):
+        if data.get('Fecha Firmado') and data.get('Fecha Firmado').strip() != '' and not pd.isna(data.get('Fecha Firmado')):
             try:
                 fecha_firmado = datetime.strptime(str(data.get('Fecha Firmado')), '%Y-%m-%d')
             except (ValueError, TypeError):
