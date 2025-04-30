@@ -1,4 +1,29 @@
 $(document).ready(function() {
+    // Función para colorear fechas antiguas (más de un año)
+    function colorearFechasAntiguas() {
+        const fechaActual = new Date();
+        const unAnioAtras = new Date();
+        unAnioAtras.setFullYear(fechaActual.getFullYear() - 1);
+        
+        $("#dataTable tbody tr").each(function() {
+            // Obtener el valor de la fecha de creación (columna 5)
+            const fechaCreacionInput = $(this).find("td:nth-child(5) input");
+            const fechaCreacionStr = fechaCreacionInput.val();
+            
+            if (fechaCreacionStr) {
+                const fechaCreacion = new Date(fechaCreacionStr);
+                
+                // Comparar si la fecha es anterior a un año atrás
+                if (fechaCreacion < unAnioAtras) {
+                    // Aplicar estilo rojo a la celda
+                    fechaCreacionInput.css("background-color", "#ffcccc");
+                    fechaCreacionInput.css("border", "1px solid #ff6666");
+                }
+            }
+        });
+    }
+
+
     // Función para actualizar la base de datos cuando hay cambios
     function actualizarBaseDatos(row) {
         // Recopilar datos de la fila actual
@@ -40,8 +65,8 @@ $(document).ready(function() {
             url: "/actualizar_fila",
             type: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ 
-                datos: rowData, 
+            data: JSON.stringify({
+                datos: rowData,
                 wo: woValue
             }),
             error: function(error) {
@@ -50,9 +75,44 @@ $(document).ready(function() {
         });
     }
     
+    
+    $(document).ready(function () {
+        $('#dataTable').on('click', 'tbody tr', function () {
+            $('#dataTable tbody tr').removeClass('row-selected');
+            $(this).addClass('row-selected');
+        });
+    });
+    
+
     // Detectar cambios en inputs
     $(document).on("change", "#dataTable input", function() {
         const row = $(this).closest("tr");
+        
+        // Si es un cambio en la fecha de creación, verificar si es antigua
+        if ($(this).closest("td").index() === 4) { // Índice 4 corresponde a la columna 5
+            const fechaCreacionStr = $(this).val();
+            const fechaActual = new Date();
+            const unAnioAtras = new Date();
+            unAnioAtras.setFullYear(fechaActual.getFullYear() - 1);
+            
+            // Resetear el estilo primero
+            $(this).css({
+                "background-color": "",
+                "border": ""
+            });
+            
+            if (fechaCreacionStr) {
+                const fechaCreacion = new Date(fechaCreacionStr);
+                // Comparar si la fecha es anterior a un año atrás
+                if (fechaCreacion < unAnioAtras) {
+                    $(this).css({
+                        "background-color": "#ffcccc",
+                        "border": "1px solid #ff6666"
+                    });
+                }
+            }
+        }
+        
         actualizarBaseDatos(row);
     });
     
@@ -75,6 +135,7 @@ $(document).ready(function() {
         // Llamar a la función existente para actualizar la base de datos
         actualizarBaseDatos(row);
     });
+    
     // Función para filtrar por semáforo
     $("#filtro-semaforo").change(function() {
         const valorFiltro = $(this).val();
@@ -181,6 +242,7 @@ $(document).ready(function() {
                 data: JSON.stringify({ wo: woValue }),
                 success: function() {
                     row.remove();
+                    alert('La fila se eliminó correctamente')
                 },
                 error: function(error) {
                     console.error("Error al eliminar la fila:", error);
@@ -259,6 +321,8 @@ $(document).ready(function() {
         `;
         document.body.appendChild(modal);
 
+        document.getElementById('Descripción').focus()
+        
         let saveDescriptionChanges = document.querySelector(".save-description-changes");
         saveDescriptionChanges.onclick = () => {
             item.val(document.getElementById("Descripción").value);
@@ -267,7 +331,7 @@ $(document).ready(function() {
             // Actualizar base de datos
             actualizarBaseDatos(row);
         };
-
+        
         let closeDescriptionModal = document.querySelector(".cancel-description-changes");
         closeDescriptionModal.onclick = () => {
             modal.remove();
@@ -282,17 +346,19 @@ $(document).ready(function() {
         let modal = document.createElement('div');
         modal.id = 'detail-modal';
         modal.innerHTML = `
-            <div id="modal-detail__content">
-                <label for="Descripción">Detalle Última Nota</label>
-                <textarea id="Descripción">${item.val()}</textarea>
-                <div id="action-buttons">   
-                    <button class="btn btn-success btn-sm mt-3 save-detail-changes">Guardar cambios</button>
-                    <button class="btn btn-danger btn-sm mt-3 cancel-detail-changes">Cerrar</button>
-                </div>
-            </div>
+        <div id="modal-detail__content">
+        <label for="Detalle">Detalle Última Nota</label>
+        <textarea id="Detalle">${item.val()}</textarea>
+        <div id="action-buttons">   
+        <button class="btn btn-success btn-sm mt-3 save-detail-changes">Guardar cambios</button>
+        <button class="btn btn-danger btn-sm mt-3 cancel-detail-changes">Cerrar</button>
+        </div>
+        </div>
         `;
         document.body.appendChild(modal);
-
+        document.getElementById('Detalle').focus()
+        
+        
         let saveDetailChanges = document.querySelector(".save-detail-changes");
         saveDetailChanges.onclick = () => {
             item.val(document.getElementById("Descripción").value);
@@ -301,13 +367,13 @@ $(document).ready(function() {
             // Actualizar base de datos
             actualizarBaseDatos(row);
         };
-
+        
         let closeDetailModal = document.querySelector(".cancel-detail-changes");
         closeDetailModal.onclick = () => {
             modal.remove();
         };
     });
-
+    
     // modal Observaciones UT con actualización en tiempo real
     $(document).on("click", ".observations", function() {
         const item = $(this);
@@ -316,17 +382,18 @@ $(document).ready(function() {
         let modal = document.createElement('div');
         modal.id = 'observations-modal';
         modal.innerHTML = `
-            <div id="modal-observations__content">
-                <label for="Observations">Observaciones UT</label>
-                <textarea id="Observations">${item.val()}</textarea>
-                <div id="action-buttons">   
-                    <button class="btn btn-success btn-sm mt-3 save-observations-changes">Guardar cambios</button>
-                    <button class="btn btn-danger btn-sm mt-3 cancel-observations-changes">Cerrar</button>
-                </div>
-            </div>
+        <div id="modal-observations__content">
+        <label for="Observations">Observaciones UT</label>
+        <textarea id="Observations">${item.val()}</textarea>
+        <div id="action-buttons">   
+        <button class="btn btn-success btn-sm mt-3 save-observations-changes">Guardar cambios</button>
+        <button class="btn btn-danger btn-sm mt-3 cancel-observations-changes">Cerrar</button>
+        </div>
+        </div>
         `;
         document.body.appendChild(modal);
-
+        document.getElementById('Observations').focus()
+        
         let saveObservacionesChanges = document.querySelector(".save-observations-changes");
         saveObservacionesChanges.onclick = () => {
             item.val(document.getElementById("Observations").value);
@@ -414,4 +481,7 @@ $(document).ready(function() {
             }
         }
     }
+    
+    // Llamar a la función para colorear fechas antiguas al cargar la página
+    colorearFechasAntiguas();
 });

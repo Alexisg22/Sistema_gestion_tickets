@@ -1,6 +1,10 @@
 # Archivos Excel
 *.xlsx
 
+#base de datos
+db_tickets.db
+.db
+
 # Directorios de subida de archivos
 uploads/
 
