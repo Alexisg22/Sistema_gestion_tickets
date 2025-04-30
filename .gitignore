@@ -1,6 +1,11 @@
 # Archivos Excel
 *.xlsx
 
+#base de datos
+db_tickets.db
+.db
+db_tickets
+
 # Directorios de subida de archivos
 uploads/
 
@@ -20,7 +25,6 @@ venv/
 # Configuración del editor/IDE
 .vscode/
 .idea/
-
 
 # Sistema operativo
 .DS_Store

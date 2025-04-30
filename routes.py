@@ -54,7 +54,7 @@ def initial():
                     Ticket.fecha_firmado < limite_fecha
                 ).delete(synchronize_session=False)
 
-            db.session.commit()
+            # db.session.commit()
             # Obtener y ordenar tickets por fecha
 
             # Actualizar semáforo de cada ticket
