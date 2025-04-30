@@ -250,6 +250,6 @@ body {
 }
 
 #dataTable tbody tr.row-selected > td {
-    background-color: #c1c1c1 !important;
+    background-color: #c1c1c1b7 !important;
     color: #333;
 }
